@@ -18,6 +18,8 @@ ALLOWED_HOSTS = []
 
 # Application definition
 INSTALLED_APPS = [
+    'auth.apps.AuthConfig',
+
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.staticfiles',
@@ -29,6 +31,8 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
+    'auth.middleware.AuthMiddleware',
 ]
 
 ROOT_URLCONF = 'jackhelper.urls'
@@ -77,7 +81,9 @@ USE_TZ = True
 
 # Static files
 STATIC_URL = 'static/'
-STATICFILES_DIRS = []
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'auth/static'),
+]
 if DEBUG is False:
     STATIC_ROOT = 'static'
 else:
@@ -85,3 +91,7 @@ else:
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+SESSION_COOKIE_AGE = 86400 * 30 # 30 days
+
+SECURE_CROSS_ORIGIN_OPENER_POLICY = "same-origin-allow-popups"

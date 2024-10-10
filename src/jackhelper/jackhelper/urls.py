@@ -1,3 +1,5 @@
 from django.urls import path, include
 
-urlpatterns = []
+urlpatterns = [
+    path('auth/', include('auth.urls')),
+]

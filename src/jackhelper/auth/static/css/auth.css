@@ -1,0 +1,36 @@
+body {
+    background-color: #F6F7F8;
+}
+
+
+.wrapper {
+    display: table;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+
+.container {
+    display: table-cell;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.auth-block {
+    display: grid;
+    margin: 0 auto;
+    width: 340px;
+    height: 350px;
+    padding: 50px;
+    border-radius: 50px;
+    row-gap: 50px;
+    align-content: center;
+    justify-content: center;
+    background-color: #ffffff;
+}
+
+.logo {
+    height: 150px;
+    display: inline-block;
+    margin: 0 auto;
+}
