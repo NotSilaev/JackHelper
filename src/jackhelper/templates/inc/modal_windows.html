@@ -1,0 +1,21 @@
+{% load static %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'css/inc/modal_windows.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'css/inc/media/modal_windows.css' %}">
+
+<div id="standartModal" class="parent" style="display: none;">
+    <div class="inner">
+        <div class="modal-window">
+            <div class="modal-heading">
+                <h2></h2>
+                <img src="{% static 'icons/modal_windows/close.svg' %}" onclick="hideModalWindow('standartModal')" width="24">
+            </div>
+
+            <div class="modal-content" style="display: none;"></div>
+
+            <div class="modal-buttons" style="display: none;">
+                <button class="accept"></button>
+            </div>
+        </div>
+    </div>
+</div>

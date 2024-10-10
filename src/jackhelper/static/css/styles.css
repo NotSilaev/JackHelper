@@ -1,0 +1,9 @@
+@import 'reset.css';
+@import 'fonts.css';
+
+/* Main settings */
+
+body {
+    font-family: "Inter";
+    background: #ffffff;
+}
