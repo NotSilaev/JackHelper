@@ -1,0 +1,6 @@
+@media (max-width: 1000px) {
+    wrapper {
+        padding: 15px;
+        width: 100%;
+    }
+}

@@ -11,7 +11,7 @@ class AuthMiddleware:
         if (path_root != 'auth') and ('user' not in request.session):
             return redirect(reverse('auth'))
         elif (path_root == 'auth') and ('user' in request.session):
-            ...
+            return redirect(reverse('main'))
 
         response = self.next(request)
         return response

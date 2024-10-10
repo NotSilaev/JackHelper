@@ -1,0 +1,28 @@
+{% load static %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'css/inc/nav.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'css/inc/media/nav.css' %}">
+
+<img id="nav-open" src="{% static 'icons/nav/nav-open.svg' %}">
+<nav id="navbar">
+    <img id="nav-close" src="{% static 'icons/nav/nav-close.svg' %}">
+    <img class="logo" src="{% static 'img/SVG/logo.svg' %}">
+
+    <ul>
+        <li>
+            <a href="{% url 'main' %}" id="main-page">
+                <img src="{% static 'icons/nav/main.svg' %}">
+                <h3 class="truncate-text">Главная</h3>
+            </a>
+        </li>
+    </ul>
+
+    <footer>
+        <div class="user-data">
+            {% with request.session.user as user %}
+                <img src="{{ user.photo_url }}">
+                <p class="medium">{{ user.first_name }}</p>
+            {% endwith %}
+        </div>
+    </footer>
+</nav>
