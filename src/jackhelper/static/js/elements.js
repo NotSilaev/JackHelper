@@ -6,3 +6,18 @@ function loadingSpinner(color) {
         </svg>`
     return loading_spinner;
 }
+
+function makeScrollable(element_id) {
+    const scrollable = document.getElementById(element_id);
+    scrollable.addEventListener('wheel', (event) => {
+        if (event.deltaY !== 0) {
+            scrollable.scrollLeft += event.deltaY;
+        event.preventDefault();
+        }
+    });
+}
+
+function getValue(selector) {
+    var value = $(selector).val();
+    return value === "" ? undefined : value;
+}

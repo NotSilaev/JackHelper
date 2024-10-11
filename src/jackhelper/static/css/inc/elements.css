@@ -34,3 +34,9 @@
     stroke-dashoffset: -124;
     }
 }
+
+.dividing-line {
+    width: 20px; 
+    height: 0.5px; 
+    background-color: black;
+}

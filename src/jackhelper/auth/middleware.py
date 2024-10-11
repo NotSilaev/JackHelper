@@ -1,5 +1,6 @@
 from django.shortcuts import redirect
 from django.urls import reverse
+from django.http import HttpResponse
 
 
 class AuthMiddleware:
@@ -7,10 +8,13 @@ class AuthMiddleware:
         self.next = next
 
     def __call__(self, request):
-        path_root = request.path.split('/')[1]
-        if (path_root != 'auth') and ('user' not in request.session):
-            return redirect(reverse('auth'))
-        elif (path_root == 'auth') and ('user' in request.session):
+        path = request.path
+        path_root = path.split('/')[1]
+
+        if 'user' not in request.session:
+            if ('api' in path): return HttpResponse('Unauthorized', status=401)
+            elif (path_root != 'auth'): return redirect(reverse('auth'))
+        elif ('user' in request.session) and (path_root == 'auth'):
             return redirect(reverse('main'))
 
         response = self.next(request)

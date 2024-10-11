@@ -43,12 +43,18 @@ ul li:hover a h3 {
 ul li:hover a[id="main-page"] img {
     content: url('../../icons/nav/hover/main.svg');
 }
+ul li:hover a[id="stats-page"] img {
+    content: url('../../icons/nav/hover/stats.svg');
+}
 
 .active-page h3 {
     font-weight: 600;
 }
 .active-page[id="main-page"] img {
     content: url('../../icons/nav/active/main.svg');;
+}
+.active-page[id="stats-page"] img {
+    content: url('../../icons/nav/active/stats.svg');;
 }
 
 

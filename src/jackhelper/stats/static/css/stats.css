@@ -1,0 +1,119 @@
+.stats-heading {
+    display: flex;
+    column-gap: 25px;
+    justify-content: space-between;
+}
+
+.stats-filters {
+    display: flex;
+    column-gap: 25px;
+}
+
+.stats-filters .filter {
+    display: flex;
+    width: auto;
+    height: 40px;
+    padding: 10px;
+    column-gap: 10px;
+    background-color: #F3F3F3;
+    border-radius: 30px;
+}
+
+#period .filter-heading, 
+#period .period-dates {
+    display: flex;
+    align-items: center;
+    column-gap: 5px;
+}
+
+#period .period-dates input {
+    padding: 5px;
+    font-size: 14px;
+    border-radius: 10px;
+    background-color: #E2E2E2;
+}
+
+#period .periods-list {
+    display: flex;
+    column-gap: 10px;
+}
+
+#period .periods-list li button {
+    display: flex;
+    align-items: center;
+    column-gap: 5px;
+    font-size: 14px;
+    border-radius: 10px;
+}
+
+#period .periods-list li button:hover {
+    color: #6E6E6E;
+}
+
+
+.actions {
+    display: flex;
+    align-items: center;
+    width: auto;
+    height: 40px;
+    padding: 10px;
+    column-gap: 10px;
+    background-color: #F3F3F3;
+    border-radius: 30px;
+}
+
+.actions button img {
+    height: 20px;
+    transition: 0.25s;
+}
+.actions button:hover img[id="reset-filters"] {
+    content: url('../icons/hover/reset_filters.svg');
+}
+.actions button:hover img[id="refresh-stats"] {
+    content: url('../icons/hover/refresh_stats.svg');
+}
+
+.actions button p {
+    display: none;
+}
+
+
+.stats {
+    display: flex;
+    margin-top: 50px;
+    column-gap: 15px;
+    overflow-x: auto;
+}
+
+.stats-block {
+    display: grid;
+    align-content: start;
+    row-gap: 15px;
+    min-width: 300px;
+}
+
+.stats-block .heading {
+    display: flex;
+    justify-content: space-between;
+}
+
+.stats-block .heading h2 {
+    font-weight: bold;
+    font-size: 24px;
+}
+
+.stats-block .metrics-list {
+    display: grid;
+    row-gap: 10px;
+}
+
+.stats-block .metrics-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    height: 35px;
+    padding: 10px;
+    background-color: #F3F3F3;
+    border-radius: 15px;
+}

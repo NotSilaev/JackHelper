@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %} Статистика {% endblock %}
+
+{% block links %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/stats.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/media/stats.css' %}">
+{% endblock %}
+
+{% block content %}
+    <div class="stats-heading">
+        <div class="stats-filters">
+            <div id="city" class="filter">
+                <h3>Город</h3>
+                <select id="city" class="cities-list" 
+                        onchange="setSelectedCity(city=$(this).val())">
+                    <option value="VLG" selected>Волгоград</option>
+                    <option value="VLZ">Волжский</option>
+                </select>
+            </div>
+
+            <div id="period" class="filter">
+                <div class="filter-heading">
+                    <h3>Период</h3>
+                    <div class="period-dates">
+                        <input id="start-date" type="date">
+                        <hr class="dividing-line">
+                        <input id="end-date" type="date">
+                    </div>
+                </div>
+                <ul class="periods-list">
+                    <li><button onclick="setPeriodTemplate('today')">Сегодня</button></li>
+                    <li><button onclick="setPeriodTemplate('yesterday')">Вчера</button></li>
+                    <li><button onclick="setPeriodTemplate('week')">Неделя</button></li>
+                    <li><button onclick="setPeriodTemplate('month')">Месяц</button></li>
+                    <li><button onclick="setPeriodTemplate('year')">Год</button></li>
+                    <li><button onclick="setPeriodTemplate('all_time')">Всё время</button></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="actions">
+            <button onclick="startRequestsSendingWithFilters()">
+                <img id="refresh-stats" 
+                     src="{% static 'icons/refresh_stats.svg' %}" 
+                     title="Обновление статистики">
+            </button>
+        </div>
+    </div>
+
+    <div id="stats-blocks-list" class="stats"></div>
+{% endblock %}
+    
+{% block scripts %}
+    <script>
+        makeScrollable('stats-blocks-list')
+
+        var selected_city = undefined;
+        function setSelectedCity(city) {
+            selected_city = city;
+            startRequestsSendingWithFilters()
+        }
+        $("#start-date, #end-date").on('change', function() {
+            startRequestsSendingWithFilters()
+        })
+
+        function startRequestsSendingWithFilters() {
+            city = selected_city;
+            start_date = getValue("#start-date")
+            end_date = getValue("#end-date")
+
+            sendSequentialRequests(city, start_date, end_date);
+        }
+    </script>
+    <script src="{% static 'js/get_stats.js' %}" async></script>
+    <script src="{% static 'js/period_templates.js' %}" async></script>
+{% endblock %}

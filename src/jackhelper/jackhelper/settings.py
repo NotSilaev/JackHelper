@@ -20,6 +20,7 @@ ALLOWED_HOSTS = []
 INSTALLED_APPS = [
     'auth.apps.AuthConfig',
     'main.apps.MainConfig',
+    'stats.apps.StatsConfig',
 
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -85,6 +86,7 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'auth/static'),
     os.path.join(BASE_DIR, 'main/static'),
+    os.path.join(BASE_DIR, 'stats/static'),
 ]
 if DEBUG is False:
     STATIC_ROOT = 'static'

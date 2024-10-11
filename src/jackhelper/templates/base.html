@@ -31,9 +31,10 @@
 		</div>
 
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-		<script src="{% static 'js/elements.js' %}" async defer></script>
-		<script src="{% static 'js/exceptions.js' %}" async defer></script>
-		<script src="{% static 'js/inc/modal_windows.js' %}" async defer></script>
-		<script src="{% static 'js/inc/nav.js' %}" async defer></script>
+		<script src="{% static 'js/elements.js' %}"></script>
+		<script src="{% static 'js/exceptions.js' %}"></script>
+		<script src="{% static 'js/inc/modal_windows.js' %}"></script>
+		<script src="{% static 'js/inc/nav.js' %}"></script>
+		{% block scripts %}{% endblock %}
 	</body>
 </html>
