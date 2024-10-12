@@ -108,6 +108,9 @@
 }
 
 .stats-block .metrics-list li {
+    display: grid;
+}
+.stats-block .metrics-list li .metric-data {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -117,3 +120,20 @@
     background-color: #F3F3F3;
     border-radius: 15px;
 }
+.stats-block .metrics-list li .submetrics-list {
+    margin-bottom: 0;
+    width: 100%;
+    height: auto;
+    padding: 10px;
+    font-size: 14px;
+    background-color: #f9f9f9;
+    border-radius: 0 0 15px 15px;
+}
+.stats-block .metrics-list li .submetrics-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 5px;
+    border-bottom: 1px solid black;
+}
+

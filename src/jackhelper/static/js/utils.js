@@ -21,3 +21,18 @@ function getValue(selector) {
     var value = $(selector).val();
     return value === "" ? undefined : value;
 }
+
+function numberToContinentalStyle(value) {
+    if (value === null || value === undefined) {
+        return "0";
+    }
+
+    let [integerPart, decimalPart] = value.toFixed(2).split('.');
+    integerPart = parseInt(integerPart).toLocaleString('en').replace(/,/g, ' ');
+
+    if (decimalPart !== '00') {
+        return `${integerPart},${decimalPart}`;
+    } else {
+        return integerPart;
+    }
+}
