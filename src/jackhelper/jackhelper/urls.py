@@ -4,4 +4,5 @@ urlpatterns = [
     path('', include('main.urls')),
     path('auth/', include('auth.urls')),
     path('stats/', include('stats.urls')),
+    path('plans/', include('plans.urls')),
 ]

@@ -23,7 +23,7 @@
 
 ul {
     display: grid;
-    row-gap: 10px;
+    row-gap: 15px;
     text-align: left;
     margin-bottom: 20px;
 }
@@ -46,6 +46,9 @@ ul li:hover a[id="main-page"] img {
 ul li:hover a[id="stats-page"] img {
     content: url('../../icons/nav/hover/stats.svg');
 }
+ul li:hover a[id="plans-page"] img {
+    content: url('../../icons/nav/hover/plans.svg');
+}
 
 .active-page h3 {
     font-weight: 600;
@@ -55,6 +58,9 @@ ul li:hover a[id="stats-page"] img {
 }
 .active-page[id="stats-page"] img {
     content: url('../../icons/nav/active/stats.svg');;
+}
+.active-page[id="plans-page"] img {
+    content: url('../../icons/nav/active/plans.svg');;
 }
 
 

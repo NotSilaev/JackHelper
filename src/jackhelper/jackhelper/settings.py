@@ -21,6 +21,7 @@ INSTALLED_APPS = [
     'auth.apps.AuthConfig',
     'main.apps.MainConfig',
     'stats.apps.StatsConfig',
+    'plans.apps.PlansConfig',
 
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -87,6 +88,7 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'auth/static'),
     os.path.join(BASE_DIR, 'main/static'),
     os.path.join(BASE_DIR, 'stats/static'),
+    os.path.join(BASE_DIR, 'plans/static'),
 ]
 if DEBUG is False:
     STATIC_ROOT = 'static'

@@ -1,0 +1,94 @@
+.plans-heading {
+    display: flex;
+    column-gap: 10px;
+    justify-content: space-between;
+}
+
+.plans-filters {
+    display: flex;
+    column-gap: 15px;
+}
+.filter {
+    display: flex;
+    width: auto;
+    height: 40px;
+    padding: 10px;
+    column-gap: 10px;
+    background-color: #F3F3F3;
+    border-radius: 30px;
+}
+
+.add-plan-button {
+    display: flex;
+    width: 200px;
+    height: 40px;
+    padding: 10px;
+    border-radius: 30px;
+    column-gap: 10px;
+    align-content: center;
+    justify-content: center;
+    color: #000000;
+    background-color: #F3F3F3;
+}
+.add-plan-button img {
+    height: 18px;
+}
+.add-plan-button:hover {
+    background-color: #e6e6e6;
+}
+
+.plans {
+    display: flex;
+    margin-top: 50px;
+    column-gap: 15px;
+    overflow-x: auto;
+}
+.plan-block {
+    display: grid;
+    align-content: start;
+    row-gap: 15px;
+    min-width: 320px;
+}
+.plan-block .plan-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.plan-block .plan-heading h2 {
+    font-weight: bold;
+    font-size: 24px;
+}
+.plan-block .plan-heading button img {
+    content: url('../icons/edit-plan.svg');
+    height: 16px;
+}
+.plan-block .plan-heading button:hover img {
+    content: url('../icons/hover/edit-plan.svg');
+}
+.plan-block .metrics-list {
+    display: grid;
+    row-gap: 15px;
+}
+.plan-block .metrics-list li {
+    display: grid;
+    padding: 10px;
+    row-gap: 10px;
+    border-radius: 15px;
+    text-align: center;
+    background-color: #F3F3F3;
+}
+.plan-block .metrics-list li .metric-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.plan-block .metrics-list li h3 {
+    font-weight: 600;
+    font-size: 18px;
+}
+.plan-block .metrics-list li .indicators {
+    display: flex;
+    column-gap: 10px;
+    align-items: center;
+    justify-content: space-between;
+}

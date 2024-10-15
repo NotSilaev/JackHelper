@@ -37,7 +37,12 @@ class Stats:
 
 
     def fetch(self, query: str, fetch_type: str, indexes: list = None, zero_if_none=False):
-        response = self.cursor.execute(query % (self.start_date, self.end_date))
+        response = self.cursor.execute(
+            query % {
+                'start_date': self.start_date, 
+                'end_date': self.end_date
+            }
+        )
         match fetch_type:
             case 'one': response = response.fetchone()
             case 'all': response = response.fetchall()
@@ -57,7 +62,7 @@ class Stats:
             FROM DOCUMENT_SERVICE_DETAIL ds
             JOIN DOCUMENT_OUT_HEADER doh
             ON ds.DOCUMENT_OUT_HEADER_ID = doh.DOCUMENT_OUT_HEADER_ID
-            WHERE doh.DATE_CREATE BETWEEN timestamp '%s 00:00' AND timestamp '%s 23:59'
+            WHERE doh.DATE_CREATE BETWEEN timestamp '%(start_date)s 00:00' AND timestamp '%(end_date)s 23:59'
             AND doh.DOCUMENT_TYPE_ID = 11
             AND doh.STATE = 4
         '''
@@ -81,7 +86,7 @@ class Stats:
                 ON go.DOCUMENT_OUT_ID = do.DOCUMENT_OUT_ID
                 JOIN DOCUMENT_OUT_HEADER doh
                 ON do.DOCUMENT_OUT_ID = doh.DOCUMENT_OUT_ID
-                WHERE doh.DATE_CREATE BETWEEN timestamp '%s 00:00' AND timestamp '%s 23:59'
+                WHERE doh.DATE_CREATE BETWEEN timestamp '%(start_date)s 00:00' AND timestamp '%(end_date)s 23:59'
                 AND doh.DOCUMENT_TYPE_ID IN (2, 3, 11)
                 AND STATE = 4
         '''
@@ -134,8 +139,8 @@ class Stats:
             try:
                 growth_trend = round(float(revenue) / last_year_revenue * 100 - 100, 2)
             except ZeroDivisionError:
-                if revenue > 0: growth_trend = 0
-                else: growth_trend = 100
+                if revenue > 0: growth_trend = 100
+                else: growth_trend = 0
 
             metrics.append({
                 'id': 'growth_trend', 
@@ -183,7 +188,7 @@ class Stats:
                 ON doh.DOCUMENT_OUT_HEADER_ID = ds.DOCUMENT_OUT_HEADER_ID
             LEFT JOIN SERVICE_WORK sw
                 ON doh.DOCUMENT_OUT_ID = sw.DOCUMENT_OUT_ID
-            WHERE doh.DATE_CREATE BETWEEN timestamp '%s 00:00' AND timestamp '%s 23:59'
+            WHERE doh.DATE_CREATE BETWEEN timestamp '%(start_date)s 00:00' AND timestamp '%(end_date)s 23:59'
             AND doh.DOCUMENT_TYPE_ID = 11
             AND doh.STATE = 4;
         '''.format(
@@ -214,7 +219,7 @@ class Stats:
                 JOIN DOCUMENT_OUT_HEADER doh
                     ON sw.DOCUMENT_OUT_ID = doh.DOCUMENT_OUT_ID
                 WHERE sw.DISCOUNT_WORK > 10
-                AND doh.DATE_CREATE BETWEEN timestamp '%s 00:00' AND timestamp '%s 23:59'
+                AND doh.DATE_CREATE BETWEEN timestamp '%(start_date)s 00:00' AND timestamp '%(end_date)s 23:59'
                 AND doh.DOCUMENT_TYPE_ID = 11
                 AND doh.STATE = 4
                 GROUP BY FLOOR(sw.DISCOUNT_WORK)
@@ -254,7 +259,7 @@ class Stats:
                 ON ds.DOCUMENT_OUT_HEADER_ID = doh.DOCUMENT_OUT_HEADER_ID
             JOIN SERVICE_WORK sw 
                 ON doh.DOCUMENT_OUT_ID = sw.DOCUMENT_OUT_ID
-            WHERE ds.DATE_START BETWEEN timestamp '%s 00:00' AND timestamp '%s 23:59'
+            WHERE ds.DATE_START BETWEEN timestamp '%(start_date)s 00:00' AND timestamp '%(end_date)s 23:59'
             AND doh.DOCUMENT_TYPE_ID = 11
             AND doh.STATE = 4
             AND sw.NAME = 'Пакет диагностик при ТО';

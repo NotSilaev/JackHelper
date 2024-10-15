@@ -13,8 +13,11 @@ function showModalWindow(windowID, height, heading, content, accept_text, accept
         $('#' + windowID + ' ' + '.modal-buttons').css('display', 'flex');
         $('#' + windowID + ' ' + '.modal-buttons .accept').html('<p>' + accept_text + '</p>');
         $('#' + windowID + ' ' + '.modal-buttons .accept').attr(
-            'onclick', accept_action + '; hideModalWindow("standartModal");'
+            'onclick', 'hideModalWindow("standartModal");' + '; ' + accept_action
         );
+    } else {
+        $('#' + windowID + ' ' + '.modal-buttons .accept').empty()
+        $('#' + windowID + ' ' + '.modal-buttons .accept').attr('onclick', null)
     }
 
     $('#' + windowID).css('display', 'table')

@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %} Планы {% endblock %}
+
+{% block links %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/plans.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/plan_window.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/stats.css' %}">
+{% endblock %}
+
+{% block content %}
+    <div class="plans-heading">
+        <div class="plans-filters">
+            <div class="filter">
+                <h3>Город</h3>
+                <select id="year" onchange="setFilterValue(filter='city', value=$(this).val())">
+                    <option value="VLG" selected>Волгоград</option>
+                    <option value="VLZ">Волжский</option>
+                </select>
+            </div>
+            <div class="filter">
+                <h3>Год</h3>
+                <select id="year" onchange="setFilterValue(filter='year', value=$(this).val())">
+                    <option value="2024" selected>2024</option>
+                    <option value="2025">2025</option>
+                </select>
+            </div>
+        </div>
+
+        <button class="add-plan-button" onclick="showPlanWindow()">
+            <img src="{% static 'icons/add-plan.svg' %}">
+            <h3 class="truncate-text">Добавить план</h3>
+        </button>
+    </div>
+
+    <div id="plans-list" class="plans"></div>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        var selected_city = 'VLG';
+        var selected_year = new Date().getFullYear();
+        function setFilterValue(filter, value) {
+            if (filter === 'city') {
+                selected_city = value;
+            } 
+            else if (filter === 'year') {
+                selected_year = value;
+            }
+            startSendingRequests(selected_city, selected_year);
+        }
+
+        $(document).ready(function() {
+            startSendingRequests(selected_city, selected_year);
+        });
+
+        makeScrollable('plans-list')
+    </script>
+    <script src="{% static 'js/plans_metadata.js' %}"></script>
+    <script src="{% static 'js/plan_window.js' %}"></script>
+    <script src="{% static 'js/set_plans.js' %}"></script>
+    <script src="{% static 'js/get_plans.js' %}"></script>
+{% endblock %}

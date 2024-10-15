@@ -7,9 +7,11 @@ function exceptionsHandler(responseJSON) {
     }
     return showModalWindow(
         windowID="standartModal", 
-        height="140",
+        height="170",
         heading="Ошибка", 
         content="Произошла неизвестная ошибка",
+        accept_text='Понял',
+        accept_action='null',
     )
 }
 
@@ -43,9 +45,11 @@ function compileValidationErrorMessages(validation_errors) {
         } else {
             showModalWindow(
                 windowID="standartModal", 
-                height="140",
+                height="200",
                 heading="Ошибка", 
                 content=error['text'],
+                accept_text='Понял',
+                accept_action='null',
             )
         }
 

@@ -67,12 +67,13 @@
 }   
 
 .modal-buttons button:hover {
-    background-color: #555555;
+    background-color: #c8c8c8;
     transition: 0.25s;
 }   
 
 .modal-buttons .accept {
-    background-color: #404040;
+    color: #000000;
+    background-color: #e3e3e3;
 }
 
 
@@ -80,8 +81,8 @@
     width: 100%;
     padding: 10px;
     border-radius: 10px;
-    color: #ffffff;
-    background-color: #404040;
+    color: #000000;
+    background-color: #e3e3e3;
     outline: none;
 }
 
@@ -90,14 +91,14 @@
     width: 100%;
     padding: 10px;
     border-radius: 10px;
-    color: #ffffff;
-    background-color: #404040;
+    color: #000000;
+    background-color: #e3e3e3;
 }
 .modal-content input::placeholder {
-    color: #cac8c8;
+    color: #1E1E1E;
     transition: 0.25s;
 }
 .modal-content input:focus::placeholder{
-    color: #e4e4e4;
+    color: #4c4c4c;
     transition: 0.25s;
 }
