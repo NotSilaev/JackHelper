@@ -214,9 +214,9 @@ class Stats:
             orders_with_discount_gte_11_query = '''
                 SELECT 
                     FLOOR(sw.DISCOUNT_WORK) AS discount_percentage,
-                    COUNT(*) AS discount_count
-                FROM SERVICE_WORK sw
-                JOIN DOCUMENT_OUT_HEADER doh
+                    COUNT(DISTINCT doh.DOCUMENT_OUT_ID) AS discount_count
+                FROM DOCUMENT_OUT_HEADER doh
+                JOIN SERVICE_WORK sw
                     ON sw.DOCUMENT_OUT_ID = doh.DOCUMENT_OUT_ID
                 WHERE sw.DISCOUNT_WORK > 10
                 AND doh.DATE_CREATE BETWEEN timestamp '%(start_date)s 00:00' AND timestamp '%(end_date)s 23:59'
@@ -224,7 +224,6 @@ class Stats:
                 AND doh.STATE = 4
                 GROUP BY FLOOR(sw.DISCOUNT_WORK)
                 ORDER BY discount_percentage;
-
             '''
             orders_with_discount_gte_11 = self.fetch(orders_with_discount_gte_11_query, fetch_type='all')
             orders_with_discount_gte_11_metric = {

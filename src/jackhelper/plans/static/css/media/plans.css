@@ -1,0 +1,6 @@
+@media (max-width: 1000px) {
+    .plans-heading {
+        display: grid;
+        row-gap: 10px;
+    }
+}

@@ -26,6 +26,7 @@ function showPlanWindow(plan_data=null) {
             </div>
         `
         
+        window_height = '300px';
         window_heading = 'Редактирование плана';
         window_accept_text = 'Сохранить';
         window_accept_action = `
@@ -89,6 +90,7 @@ function showPlanWindow(plan_data=null) {
             </div>
         `
 
+        window_height = '420px';
         window_heading = 'Добавление плана';
         window_accept_text = 'Добавить';
         window_accept_action = `
@@ -102,7 +104,7 @@ function showPlanWindow(plan_data=null) {
 
     showModalWindow(
         windowID='standartModal', 
-        height='420px', 
+        height=window_height, 
         heading=window_heading, 
         content=plan_frame, 
         accept_text=window_accept_text, 

@@ -8,11 +8,12 @@
 }
 .horizontal {
     display: flex;
-    column-gap: 10px;
+    column-gap: 5px;
+    font-size: 14px;
     align-items: center;
     justify-content: center;
 }
 .plan-data input, select {
     font-size: 16px;
-    width: 100px;
+    width: 100%;
 }

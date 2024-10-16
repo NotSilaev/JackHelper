@@ -55,7 +55,7 @@ def getAvailableMonths(request):
     year = request.GET.get('year')
     
     available_months = [
-        i.month for i in Plan.objects.only('month').order_by('month').filter(city=city, year=year)
+        i.month for i in Plan.objects.only('month').order_by('-month').filter(city=city, year=year)
     ]
     current_month = datetime.datetime.now().month
     if current_month in available_months:
@@ -96,12 +96,12 @@ def getPlanMetrics(request):
             'current_value': current_revenue
         },
         {
-            'title': 'Выручка', 
+            'title': 'Выручка с работ', 
             'plan_value': plan.works_revenue, 
             'current_value': current_works_revenue
         },
         {
-            'title': 'Выручка', 
+            'title': 'Выручка с з/ч', 
             'plan_value': plan.spare_parts_revenue, 
             'current_value': current_spare_parts_revenue
         },
