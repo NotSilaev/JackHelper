@@ -56,15 +56,15 @@ class Stats:
 
     def financeBlock(self) -> list:
         metrics = []
-
+        
         works_revenue_query = '''
             SELECT SUM(SUMMA_WORK)
-            FROM DOCUMENT_SERVICE_DETAIL ds
+                FROM DOCUMENT_SERVICE_DETAIL ds
             JOIN DOCUMENT_OUT_HEADER doh
-            ON ds.DOCUMENT_OUT_HEADER_ID = doh.DOCUMENT_OUT_HEADER_ID
+                ON ds.DOCUMENT_OUT_HEADER_ID = doh.DOCUMENT_OUT_HEADER_ID
             WHERE doh.DATE_CREATE BETWEEN timestamp '%(start_date)s 00:00' AND timestamp '%(end_date)s 23:59'
-            AND doh.DOCUMENT_TYPE_ID = 11
-            AND doh.STATE = 4
+                AND doh.DOCUMENT_TYPE_ID = 11
+                AND doh.STATE = 4
         '''
         works_revenue = self.fetch(
             works_revenue_query, 
@@ -80,15 +80,19 @@ class Stats:
         })
 
         spare_parts_revenue_query = '''
-                SELECT SUM(COST * GOODS_COUNT)
-                FROM GOODS_OUT go
+                SELECT SUM(
+                    go.COST 
+                    * (go.GOODS_COUNT - go.GOODS_COUNT_RETURN) 
+                    * (1 - go.DISCOUNT / 100)
+                )
+                    FROM GOODS_OUT go
                 JOIN DOCUMENT_OUT do
-                ON go.DOCUMENT_OUT_ID = do.DOCUMENT_OUT_ID
+                    ON go.DOCUMENT_OUT_ID = do.DOCUMENT_OUT_ID
                 JOIN DOCUMENT_OUT_HEADER doh
-                ON do.DOCUMENT_OUT_ID = doh.DOCUMENT_OUT_ID
+                    ON do.DOCUMENT_OUT_ID = doh.DOCUMENT_OUT_ID
                 WHERE doh.DATE_CREATE BETWEEN timestamp '%(start_date)s 00:00' AND timestamp '%(end_date)s 23:59'
-                AND doh.DOCUMENT_TYPE_ID IN (2, 3, 11)
-                AND STATE = 4
+                    AND doh.DOCUMENT_TYPE_ID IN (2, 3, 11)
+                    AND STATE = 4
         '''
         spare_parts_revenue = self.fetch(
             spare_parts_revenue_query, 
@@ -98,20 +102,55 @@ class Stats:
         )
         metrics.append({
             'id': 'spare_parts_revenue', 
-            'title': 'Выручка с з/ч',
+            'title': 'Запчасти выход',
             'value': float(spare_parts_revenue), 
             'unit': '₽'
         })
 
-        revenue = works_revenue + spare_parts_revenue
+        revenue = float(works_revenue) + float(spare_parts_revenue)
         metrics.insert(0, {
             'id': 'revenue',
             'title': 'Выручка',
-            'value': float(revenue),
+            'value': revenue,
             'unit': '₽',
         })  
 
         if self.short_output is False:
+            input_spare_parts_cost_query = '''
+                SELECT SUM(
+                    gi.COST1 * (go.GOODS_COUNT - go.GOODS_COUNT_RETURN)
+                )
+                    FROM GOODS_IN gi
+                JOIN GOODS_OUT go
+                    ON gi.GOODS_IN_ID = go.GOODS_IN_ID
+                JOIN DOCUMENT_OUT do
+                    ON go.DOCUMENT_OUT_ID = do.DOCUMENT_OUT_ID
+                JOIN DOCUMENT_OUT_HEADER doh
+                    ON do.DOCUMENT_OUT_ID = doh.DOCUMENT_OUT_ID
+                WHERE doh.DATE_CREATE BETWEEN timestamp '%(start_date)s 00:00' AND timestamp '%(end_date)s 23:59'
+                    AND doh.DOCUMENT_TYPE_ID IN (2, 3, 11)
+                    AND STATE = 4
+            '''
+            input_spare_parts_cost = self.fetch(
+                input_spare_parts_cost_query, 
+                fetch_type='one', 
+                indexes=[0], 
+                zero_if_none=True
+            )
+            metrics.insert(2, {
+                'id': 'input_spare_parts_cost', 
+                'title': 'Запчасти вход',
+                'value': float(input_spare_parts_cost), 
+                'unit': '₽'
+            })
+
+            metrics.append({
+                'id': 'input_spare_parts_cost', 
+                'title': 'Доход с з/ч',
+                'value': float(spare_parts_revenue) - float(input_spare_parts_cost), 
+                'unit': '₽'
+            })
+
             days_in_year = daysInYear()
             s = Stats(
                 self.city, 
@@ -181,16 +220,15 @@ class Stats:
         '''
 
         orders_count_query = '''
-            SELECT 
-                {columns_list}
-            FROM DOCUMENT_OUT_HEADER doh
+            SELECT {columns_list}
+                FROM DOCUMENT_OUT_HEADER doh
             LEFT JOIN DOCUMENT_SERVICE_DETAIL ds
                 ON doh.DOCUMENT_OUT_HEADER_ID = ds.DOCUMENT_OUT_HEADER_ID
             LEFT JOIN SERVICE_WORK sw
                 ON doh.DOCUMENT_OUT_ID = sw.DOCUMENT_OUT_ID
             WHERE doh.DATE_CREATE BETWEEN timestamp '%(start_date)s 00:00' AND timestamp '%(end_date)s 23:59'
-            AND doh.DOCUMENT_TYPE_ID = 11
-            AND doh.STATE = 4;
+                AND doh.DOCUMENT_TYPE_ID = 11
+                AND doh.STATE = 4;
         '''.format(
             columns_list=only_total_count if self.short_output else each_count
         )
@@ -219,9 +257,9 @@ class Stats:
                 JOIN SERVICE_WORK sw
                     ON sw.DOCUMENT_OUT_ID = doh.DOCUMENT_OUT_ID
                 WHERE sw.DISCOUNT_WORK > 10
-                AND doh.DATE_CREATE BETWEEN timestamp '%(start_date)s 00:00' AND timestamp '%(end_date)s 23:59'
-                AND doh.DOCUMENT_TYPE_ID = 11
-                AND doh.STATE = 4
+                    AND doh.DATE_CREATE BETWEEN timestamp '%(start_date)s 00:00' AND timestamp '%(end_date)s 23:59'
+                    AND doh.DOCUMENT_TYPE_ID = 11
+                    AND doh.STATE = 4
                 GROUP BY FLOOR(sw.DISCOUNT_WORK)
                 ORDER BY discount_percentage;
             '''
@@ -253,15 +291,15 @@ class Stats:
 
         packages_sold_query = '''
             SELECT COUNT(ds.DOCUMENT_SERVICE_DETAIL_ID)
-            FROM DOCUMENT_SERVICE_DETAIL ds
+                FROM DOCUMENT_SERVICE_DETAIL ds
             JOIN DOCUMENT_OUT_HEADER doh 
                 ON ds.DOCUMENT_OUT_HEADER_ID = doh.DOCUMENT_OUT_HEADER_ID
             JOIN SERVICE_WORK sw 
                 ON doh.DOCUMENT_OUT_ID = sw.DOCUMENT_OUT_ID
             WHERE ds.DATE_START BETWEEN timestamp '%(start_date)s 00:00' AND timestamp '%(end_date)s 23:59'
-            AND doh.DOCUMENT_TYPE_ID = 11
-            AND doh.STATE = 4
-            AND sw.NAME = 'Пакет диагностик при ТО';
+                AND doh.DOCUMENT_TYPE_ID = 11
+                AND doh.STATE = 4
+                AND sw.NAME = 'Пакет диагностик при ТО';
         '''
         packages_sold = self.fetch(
             packages_sold_query, 
