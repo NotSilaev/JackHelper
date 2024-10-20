@@ -18,7 +18,7 @@ def login(request):
     request.session['user'] = {
         'user_id': user_id,
         'first_name': auth_data['first_name'],
-        'last_name': auth_data['last_name'],
+        'username': auth_data['username'],
         'photo_url': auth_data['photo_url'],
     }
     request.session.save()

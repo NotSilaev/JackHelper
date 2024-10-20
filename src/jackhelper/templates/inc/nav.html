@@ -27,13 +27,30 @@
                 <h3 class="truncate-text">Планы</h3>
             </a>
         </li>
+        <li>
+            <a href="{% url 'orders' %}" id="orders-page">
+                <img src="{% static 'icons/nav/orders.svg' %}">
+                <h3 class="truncate-text">Заказ-наряды</h3>
+            </a>
+        </li>
     </ul>
 
     <footer>
         <div class="user-data">
             {% with request.session.user as user %}
-                <img src="{{ user.photo_url }}">
-                <p class="medium">{{ user.first_name }}</p>
+                {% if user.photo_url %}
+                    <img src="{{ user.photo_url }}">
+                {% endif %}
+
+                <p class="medium">
+                    {% if user.first_name %}
+                        {{ user.first_name }}
+                    {% elif user.username %}
+                        {{ user.username }}
+                    {% else %}
+                        Пользователь
+                    {% endif %}
+                </p>
             {% endwith %}
         </div>
     </footer>

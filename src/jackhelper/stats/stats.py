@@ -151,14 +151,9 @@ class Stats:
                 'unit': '₽'
             })
 
-            days_in_year = daysInYear()
-            s = Stats(
-                self.city, 
-                self.start_date-datetime.timedelta(days=days_in_year),
-                self.end_date-datetime.timedelta(days=days_in_year),
-            )
 
-            orders_count = s.getMetrics('orders', short_output=True)['metrics'][0]['value']
+            stats_obj = Stats(self.city, self.start_date, self.end_date)
+            orders_count = stats_obj.getMetrics('orders', short_output=True)['metrics'][0]['value']
             try:
                 average_check = float(revenue) / orders_count
             except ZeroDivisionError:
@@ -170,7 +165,13 @@ class Stats:
                 'unit': '₽',
             })  
 
-            last_year_metrics = s.getMetrics('finance', short_output=True)['metrics']
+            days_in_year = daysInYear()
+            last_year_stats_obj = Stats(
+                self.city, 
+                self.start_date-datetime.timedelta(days=days_in_year),
+                self.end_date-datetime.timedelta(days=days_in_year)
+            )
+            last_year_metrics = last_year_stats_obj.getMetrics('finance', short_output=True)['metrics']
             last_year_revenue = last_year_metrics[0]['value']
             last_year_works_revenue = last_year_metrics[1]['value']
             last_year_spare_parts_revenue = last_year_metrics[2]['value']
@@ -241,6 +242,7 @@ class Stats:
             'value': orders_count, 
             'unit': 'шт.'
         }
+
         if self.short_output is False:
             orders_count_metric['submetrics'] = [
                 {'title': 'Без рекомендаций', 'value': orders[1]},
