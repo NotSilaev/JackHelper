@@ -9,6 +9,7 @@ function sendSequentialRequests(city, start_date, end_date) {
     let blocks = [
         {'id': 'finance', 'title': 'Финансы'},
         {'id': 'orders', 'title': 'Заказ-наряды'},
+        {'id': 'normal_hours', 'title': 'Нормо-часы'},
         {'id': 'diagnostic_packages', 'title': 'Пакеты диагностик при ТО'},
     ];
     let promise = $.Deferred().resolve();

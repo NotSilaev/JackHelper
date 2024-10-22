@@ -8,6 +8,7 @@ function showPlanWindow(plan_data=null) {
         revenue = metrics['revenue'];
         works_revenue = metrics['works_revenue'];
         spare_parts_revenue = metrics['spare_parts_revenue'];
+        normal_hours = metrics['normal_hours'];
 
         plan_frame = `
             <div class="plan-window">
@@ -22,11 +23,12 @@ function showPlanWindow(plan_data=null) {
                     <input id="revenue" value="${revenue}" placeholder="Выручка">
                     <input id="works_revenue" value="${works_revenue}" placeholder="Выручка с работ">
                     <input id="spare_parts_revenue" value="${spare_parts_revenue}" placeholder="Выручка с з/ч">
+                    <input id="normal_hours" value="${normal_hours}" placeholder="Нормо-часы">
                 </div>
             </div>
         `
         
-        window_height = '300px';
+        window_height = '340px';
         window_heading = 'Редактирование плана';
         window_accept_text = 'Сохранить';
         window_accept_action = `
@@ -86,11 +88,12 @@ function showPlanWindow(plan_data=null) {
                     <input id="revenue" placeholder="Выручка">
                     <input id="works_revenue" placeholder="Выручка с работ">
                     <input id="spare_parts_revenue" placeholder="Выручка с з/ч">
+                    <input id="normal_hours" placeholder="Нормо-часы">
                 </div>
             </div>
         `
 
-        window_height = '420px';
+        window_height = '450px';
         window_heading = 'Добавление плана';
         window_accept_text = 'Добавить';
         window_accept_action = `

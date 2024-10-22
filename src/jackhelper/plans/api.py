@@ -15,7 +15,9 @@ def setMonthPlan(request):
     revenue = request.POST.get('revenue')
     works_revenue = request.POST.get('works_revenue')
     spare_parts_revenue = request.POST.get('spare_parts_revenue')
-    metrics = [revenue, works_revenue, spare_parts_revenue]
+    normal_hours = request.POST.get('normal_hours')
+    print(normal_hours)
+    metrics = [revenue, works_revenue, spare_parts_revenue, normal_hours]
 
     if False in list(map(str.isnumeric, metrics)):
         return JsonResponse({'errors': [
@@ -28,6 +30,7 @@ def setMonthPlan(request):
         plan.revenue = revenue
         plan.works_revenue = works_revenue
         plan.spare_parts_revenue = spare_parts_revenue
+        plan.normal_hours = normal_hours
         plan.save()
         plan_status = 'changed'
     except Plan.DoesNotExist:
@@ -37,7 +40,8 @@ def setMonthPlan(request):
             month=month,
             revenue=revenue, 
             works_revenue=works_revenue, 
-            spare_parts_revenue=spare_parts_revenue
+            spare_parts_revenue=spare_parts_revenue,
+            normal_hours=normal_hours
         )
         plan_status = 'created'
 
@@ -81,29 +85,41 @@ def getPlanMetrics(request):
     
     start_date = datetime.datetime.strptime(f'{year}-{month}-1', '%Y-%m-%d')
     end_date = start_date + datetime.timedelta(days=daysUntilNextMonth(start_date)-1)
-    finance_metrics = Stats(
-        city, start_date.date(), end_date.date()
-    ).getMetrics('finance', short_output=True)['metrics']
 
+    stats_obj = Stats(city, start_date.date(), end_date.date())
+
+    finance_metrics = stats_obj.getMetrics('finance', short_output=True)['metrics']
     current_revenue = finance_metrics[0]['value']
     current_works_revenue = finance_metrics[1]['value']
     current_spare_parts_revenue = finance_metrics[2]['value']
+
+    normal_hours_metrics = stats_obj.getMetrics('normal_hours', short_output=True)['metrics']
+    current_normal_hours = normal_hours_metrics[0]['value']
 
     metrics = [
         {
             'title': 'Выручка', 
             'plan_value': plan.revenue, 
-            'current_value': current_revenue
+            'current_value': current_revenue,
+            'metric_unit': '₽',
         },
         {
             'title': 'Выручка с работ', 
             'plan_value': plan.works_revenue, 
-            'current_value': current_works_revenue
+            'current_value': current_works_revenue,
+            'metric_unit': '₽',
         },
         {
             'title': 'Выручка с з/ч', 
             'plan_value': plan.spare_parts_revenue, 
-            'current_value': current_spare_parts_revenue
+            'current_value': current_spare_parts_revenue,
+            'metric_unit': '₽',
+        },
+        {
+            'title': 'Нормо-часы', 
+            'plan_value': plan.normal_hours, 
+            'current_value': current_normal_hours,
+            'metric_unit': 'ч.',
         },
     ]
 

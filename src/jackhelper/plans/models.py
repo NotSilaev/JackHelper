@@ -8,6 +8,7 @@ class Plan(models.Model):
     revenue = models.IntegerField()
     works_revenue = models.IntegerField()
     spare_parts_revenue = models.IntegerField()
+    normal_hours = models.IntegerField()
 
     class Meta:
         db_table = 'plans'

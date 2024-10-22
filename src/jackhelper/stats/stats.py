@@ -19,6 +19,7 @@ class Stats:
             'finance': self.financeBlock,
             'orders': self.ordersBlock,
             'diagnostic_packages': self.diagnosticPackagesBlock,
+            'normal_hours': self.normalHoursBlock,
         }
 
 
@@ -315,4 +316,38 @@ class Stats:
             'value': packages_sold, 
             'unit': 'шт.'
         })
+        return metrics
+
+    
+    def normalHoursBlock(self) -> list:
+        metrics = []
+
+        houzs_count_query = '''
+            SELECT 
+                SUM(CASE 
+                    WHEN sw.PRICE IS NOT NULL AND sw.TIME_VALUE IS NULL THEN (sw.PRICE / sw.PRICE_NORM)
+                    WHEN sw.PRICE IS NULL AND sw.TIME_VALUE IS NOT NULL THEN (sw.TIME_VALUE * sw.QUANTITY)
+                    WHEN sw.PRICE IS NOT NULL AND sw.TIME_VALUE IS NOT NULL THEN (sw.TIME_VALUE * sw.QUANTITY)
+                    ELSE 0
+                END) AS total_sum
+            FROM SERVICE_WORK sw
+            JOIN DOCUMENT_OUT_HEADER doh
+                ON sw.DOCUMENT_OUT_ID = doh.DOCUMENT_OUT_ID
+            WHERE doh.DATE_CREATE BETWEEN timestamp '%(start_date)s 00:00' AND timestamp '%(end_date)s 23:59'
+                AND doh.DOCUMENT_TYPE_ID = 11
+                AND doh.STATE = 4;
+        '''
+        hours_count = self.fetch(
+            houzs_count_query, 
+            fetch_type='one',
+            indexes=[0],
+            zero_if_none=True
+        )
+        metrics.append({
+            'id': 'hours_count', 
+            'title': 'Всего часов', 
+            'value': float(hours_count), 
+            'unit': 'ч.'
+        })
+
         return metrics

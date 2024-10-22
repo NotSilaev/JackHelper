@@ -1,5 +1,4 @@
 function startSendingRequests(city, year) {
-    console.log(city, year)
     endpoint_url = location.href + 'api/getAvailableMonths/'
     $.ajax({
         url: endpoint_url,
@@ -105,6 +104,7 @@ function addPlanBlockMetrics(response) {
             'revenue': '${metrics[0]['plan_value']}',
             'works_revenue': '${metrics[1]['plan_value']}',
             'spare_parts_revenue': '${metrics[2]['plan_value']}',
+            'normal_hours': '${metrics[3]['plan_value']}',
         }
     }`
     plan_heading.append(`
@@ -116,10 +116,14 @@ function addPlanBlockMetrics(response) {
     metrics_list = $(`#${plan_id} .metrics-list`);
     metrics_list.empty();
     metrics.forEach(function(metric){
-        title = metric['title']
-        current_value = metric['current_value']
-        plan_value = metric['plan_value']
+        title = metric['title'];
+        current_value = metric['current_value'];
+        plan_value = metric['plan_value'];
         progress_percent = Math.trunc(current_value / plan_value * 100, 2)
+        if (isNaN(progress_percent)|| progress_percent === Infinity) {
+            progress_percent = 0;
+        };
+        metric_unit = metric['metric_unit'];
 
         metrics_list.append(`
             <li>
@@ -128,9 +132,9 @@ function addPlanBlockMetrics(response) {
                     <p class="medium">${progress_percent} %</p>
                 </div>
                 <div class="indicators">
-                    <p class="medium">${numberToContinentalStyle(current_value)} ₽</p>
+                    <p class="medium">${numberToContinentalStyle(current_value)} ${metric_unit}</p>
                     <hr class="dividing-line">
-                    <p class="medium">${numberToContinentalStyle(plan_value)} ₽</p>
+                    <p class="medium">${numberToContinentalStyle(plan_value)} ${metric_unit}</p>
                 </div>
             </li>
         `);
