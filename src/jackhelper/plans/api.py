@@ -16,7 +16,6 @@ def setMonthPlan(request):
     works_revenue = request.POST.get('works_revenue')
     spare_parts_revenue = request.POST.get('spare_parts_revenue')
     normal_hours = request.POST.get('normal_hours')
-    print(normal_hours)
     metrics = [revenue, works_revenue, spare_parts_revenue, normal_hours]
 
     if False in list(map(str.isnumeric, metrics)):

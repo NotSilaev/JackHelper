@@ -67,16 +67,16 @@ class Stats:
                 AND doh.DOCUMENT_TYPE_ID = 11
                 AND doh.STATE = 4
         '''
-        works_revenue = self.fetch(
+        works_revenue = float(self.fetch(
             works_revenue_query, 
             fetch_type='one', 
             indexes=[0], 
             zero_if_none=True
-        )
+        ))
         metrics.append({
             'id': 'works_revenue', 
             'title': 'Выручка с работ', 
-            'value': float(works_revenue), 
+            'value': works_revenue, 
             'unit': '₽'
         })
 
@@ -95,20 +95,20 @@ class Stats:
                     AND doh.DOCUMENT_TYPE_ID IN (2, 3, 11)
                     AND STATE = 4
         '''
-        spare_parts_revenue = self.fetch(
+        spare_parts_revenue = float(self.fetch(
             spare_parts_revenue_query, 
             fetch_type='one', 
             indexes=[0], 
             zero_if_none=True
-        )
+        ))
         metrics.append({
             'id': 'spare_parts_revenue', 
             'title': 'Запчасти выход',
-            'value': float(spare_parts_revenue), 
+            'value': spare_parts_revenue, 
             'unit': '₽'
         })
 
-        revenue = float(works_revenue) + float(spare_parts_revenue)
+        revenue = works_revenue + spare_parts_revenue
         metrics.insert(0, {
             'id': 'revenue',
             'title': 'Выручка',
@@ -116,50 +116,62 @@ class Stats:
             'unit': '₽',
         })  
 
-        if self.short_output is False:
-            input_spare_parts_cost_query = '''
-                SELECT SUM(
-                    gi.COST1 * (go.GOODS_COUNT - go.GOODS_COUNT_RETURN)
-                )
-                    FROM GOODS_IN gi
-                JOIN GOODS_OUT go
-                    ON gi.GOODS_IN_ID = go.GOODS_IN_ID
-                JOIN DOCUMENT_OUT do
-                    ON go.DOCUMENT_OUT_ID = do.DOCUMENT_OUT_ID
-                JOIN DOCUMENT_OUT_HEADER doh
-                    ON do.DOCUMENT_OUT_ID = doh.DOCUMENT_OUT_ID
-                WHERE doh.DATE_CREATE BETWEEN timestamp '%(start_date)s 00:00' AND timestamp '%(end_date)s 23:59'
-                    AND doh.DOCUMENT_TYPE_ID IN (2, 3, 11)
-                    AND STATE = 4
-            '''
-            input_spare_parts_cost = self.fetch(
-                input_spare_parts_cost_query, 
-                fetch_type='one', 
-                indexes=[0], 
-                zero_if_none=True
+        input_spare_parts_cost_query = '''
+            SELECT SUM(
+                gi.COST1 * (go.GOODS_COUNT - go.GOODS_COUNT_RETURN)
             )
-            metrics.insert(2, {
-                'id': 'input_spare_parts_cost', 
-                'title': 'Запчасти вход',
-                'value': float(input_spare_parts_cost), 
-                'unit': '₽'
-            })
+                FROM GOODS_IN gi
+            JOIN GOODS_OUT go
+                ON gi.GOODS_IN_ID = go.GOODS_IN_ID
+            JOIN DOCUMENT_OUT do
+                ON go.DOCUMENT_OUT_ID = do.DOCUMENT_OUT_ID
+            JOIN DOCUMENT_OUT_HEADER doh
+                ON do.DOCUMENT_OUT_ID = doh.DOCUMENT_OUT_ID
+            WHERE doh.DATE_CREATE BETWEEN timestamp '%(start_date)s 00:00' AND timestamp '%(end_date)s 23:59'
+                AND doh.DOCUMENT_TYPE_ID IN (2, 3, 11)
+                AND STATE = 4
+        '''
+        input_spare_parts_cost = float(self.fetch(
+            input_spare_parts_cost_query, 
+            fetch_type='one', 
+            indexes=[0], 
+            zero_if_none=True
+        ))
+        metrics.append({
+            'id': 'input_spare_parts_cost', 
+            'title': 'Запчасти вход',
+            'value': input_spare_parts_cost, 
+            'unit': '₽'
+        })
 
-            metrics.append({
-                'id': 'input_spare_parts_cost', 
-                'title': 'Доход с з/ч',
-                'value': float(spare_parts_revenue) - float(input_spare_parts_cost), 
-                'unit': '₽'
-            })
+        metrics.append({
+            'id': 'input_spare_parts_cost', 
+            'title': 'Доход с з/ч',
+            'value': spare_parts_revenue - input_spare_parts_cost, 
+            'unit': '₽'
+        })
+
+        try:
+            spare_parts_margin = spare_parts_revenue / input_spare_parts_cost * 100 - 100
+        except ZeroDivisionError:
+            if spare_parts_revenue > 0: spare_parts_margin = 100
+            else: spare_parts_margin = 0
+        metrics.append({
+            'id': 'spare_parts_margin', 
+            'title': 'Наценка з/ч',
+            'value': spare_parts_margin, 
+            'unit': '%'
+        })
 
 
+        if self.short_output is False:
             stats_obj = Stats(self.city, self.start_date, self.end_date)
             orders_count = stats_obj.getMetrics('orders', short_output=True)['metrics'][0]['value']
             try:
                 average_check = float(revenue) / orders_count
             except ZeroDivisionError:
                 average_check = 0
-            metrics.append({
+            metrics.insert(5, {
                 'id': 'average_check',
                 'title': 'Средний чек',
                 'value': average_check,
@@ -174,8 +186,6 @@ class Stats:
             )
             last_year_metrics = last_year_stats_obj.getMetrics('finance', short_output=True)['metrics']
             last_year_revenue = last_year_metrics[0]['value']
-            last_year_works_revenue = last_year_metrics[1]['value']
-            last_year_spare_parts_revenue = last_year_metrics[2]['value']
 
             try:
                 growth_trend = round(float(revenue) / last_year_revenue * 100 - 100, 2)
@@ -189,7 +199,6 @@ class Stats:
                 'value': growth_trend, 
                 'unit': '%',
                 'submetrics': last_year_metrics,
-                'submetrics_unit': '₽',
             })
 
         return metrics
@@ -325,11 +334,17 @@ class Stats:
         houzs_count_query = '''
             SELECT 
                 SUM(CASE 
-                    WHEN sw.PRICE IS NOT NULL AND sw.TIME_VALUE IS NULL THEN (sw.PRICE / sw.PRICE_NORM)
-                    WHEN sw.PRICE IS NULL AND sw.TIME_VALUE IS NOT NULL THEN (sw.TIME_VALUE * sw.QUANTITY)
-                    WHEN sw.PRICE IS NOT NULL AND sw.TIME_VALUE IS NOT NULL THEN (sw.TIME_VALUE * sw.QUANTITY)
+                    WHEN sw.PRICE IS NOT NULL AND sw.TIME_VALUE IS NULL AND sw.PRICE_NORM != 0 
+                    THEN (sw.PRICE / sw.PRICE_NORM)
+
+                    WHEN sw.PRICE IS NULL AND sw.TIME_VALUE IS NOT NULL 
+                    THEN (sw.TIME_VALUE * sw.QUANTITY)
+
+                    WHEN sw.PRICE IS NOT NULL AND sw.TIME_VALUE IS NOT NULL 
+                    THEN (sw.TIME_VALUE * sw.QUANTITY)
+
                     ELSE 0
-                END) AS total_sum
+                END) AS total_normal_hours
             FROM SERVICE_WORK sw
             JOIN DOCUMENT_OUT_HEADER doh
                 ON sw.DOCUMENT_OUT_ID = doh.DOCUMENT_OUT_ID

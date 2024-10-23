@@ -88,7 +88,6 @@ function addStatsBlockMetrics(response) {
         metric_value = metric['value'];
         metric_unit = metric['unit'];
         metric_submetrics = metric['submetrics'];
-        metric_submetrics_unit = metric['submetrics_unit'];
 
         if (typeof metric_value === 'number') {
             metric_value = numberToContinentalStyle(metric_value);
@@ -118,17 +117,15 @@ function addStatsBlockMetrics(response) {
             metric_submetrics.forEach(function(submetric) {
                 submetric_title = submetric['title']
                 submetric_value = submetric['value']
+                submetric_unit = submetric['unit']
 
                 if (typeof submetric_value === 'number') {
                     submetric_value = numberToContinentalStyle(submetric_value);
                 }
                 if (submetric_value !== null) {
-                    if (metric_submetrics_unit !== undefined) {
-                        submetric_value = `${submetric_value} ${metric_submetrics_unit}`;
-                    } 
-                    else if (metric_unit !== undefined) {
-                        submetric_value = `${submetric_value} ${metric_unit}`;
-                    };
+                    if (submetric_unit !== undefined) {
+                        submetric_value = `${submetric_value} ${submetric_unit}`;
+                    }
                 };
                 if (submetric_value === null) {
                     submetric_value = 'Ошибка загрузки';
