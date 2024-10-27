@@ -49,6 +49,9 @@ ul li:hover a[id="stats-page"] img {
 ul li:hover a[id="plans-page"] img {
     content: url('../../icons/nav/hover/plans.svg');
 }
+ul li:hover a[id="orders-page"] img {
+    content: url('../../icons/nav/hover/orders.svg');
+}
 
 .active-page h3 {
     font-weight: 600;
@@ -61,6 +64,9 @@ ul li:hover a[id="plans-page"] img {
 }
 .active-page[id="plans-page"] img {
     content: url('../../icons/nav/active/plans.svg');;
+}
+.active-page[id="orders-page"] img {
+    content: url('../../icons/nav/active/orders.svg');;
 }
 
 

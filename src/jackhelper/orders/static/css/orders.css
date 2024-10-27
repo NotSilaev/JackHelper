@@ -1,0 +1,133 @@
+.orders-container {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+}
+
+.orders {
+    width: 75%;
+}
+.orders ul {
+    display: grid;
+    row-gap: 10px;
+    margin-bottom: 55px;
+}
+.order-block {
+    display: flex;
+    width: 100%;
+    padding: 10px 15px 10px 15px;
+    border-radius: 30px;
+    justify-content: space-between;
+    background-color: #F3F3F3;
+}
+.order-block:hover {
+    cursor: pointer;
+    background-color: #e7e7e7;
+}
+.order-block div {
+    display: flex;
+    column-gap: 10px;
+    font-size: 14px;
+}
+.order-block div p {
+    display: flex;
+    column-gap: 5px;
+    color: #676767;
+}
+.order-block div span {
+    display: block;
+    max-width: 400px;
+    color: #000000;
+}
+
+.orders .pagination {
+    display: flex;
+    position: fixed;
+    bottom: 10px;
+    width: 63.5%;
+    border-radius: 15px;
+    justify-content: center;
+    background-color: #b8b8b876;
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+}
+.orders .pagination ul {
+    display: flex;
+    padding: 10px;
+    column-gap: 5px;
+    margin-bottom: 0;
+}
+.orders .pagination ul li button {
+    padding: 10px;
+    border-radius: 15px;
+    font-size: 14px;
+    color: #000000;
+    background-color: #F3F3F3;
+}
+.orders .pagination ul li button:hover {
+    background-color: #e7e7e7;
+}
+.orders .pagination ul li .current-page {
+    color: #F3F3F3;
+    background-color: #333333;
+}
+.orders .pagination ul li:hover .current-page {
+    color: #F3F3F3;
+    background-color: #333333;
+}
+
+.orders-filters {
+    display: grid;
+    position: fixed;
+    width: 20%;
+    right: 10px;
+    row-gap: 10px;
+}
+.orders-filters .orders-search {
+    display: flex;
+    padding: 10px;
+    border-radius: 15px;
+    column-gap: 10px;
+    align-items: center;
+    background-color: #F3F3F3;
+}
+.orders-filters .orders-search img {
+    height: 16px;
+}
+.orders-filters .orders-search input {
+    width: 100%;
+    color: #000000;
+    font-size: 16px;
+}
+.orders-filters .orders-search input::placeholder {
+    color: #000000;
+}
+.orders-filters .orders-search input:focus::placeholder {
+    color: #676767;
+}
+.orders-filters .orders-city {
+    padding: 10px;
+    border-radius: 15px;
+    background-color: #F3F3F3;
+}
+.orders-filters .orders-period-dates {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.orders-filters .orders-period-dates input {
+    width: 45%;
+    padding: 5px;
+    font-size: 14px;
+    border-radius: 10px;
+    background-color: #F3F3F3;
+}
+.orders-filters .orders-tags ul {
+    padding: 15px;
+    margin-bottom: 0;
+    border-radius: 15px;
+    background-color: #F3F3F3;
+}
+.orders-filters .orders-tags ul li {
+    border-bottom: 1px solid black;
+}

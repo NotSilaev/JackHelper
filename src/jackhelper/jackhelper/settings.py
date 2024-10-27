@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     'main.apps.MainConfig',
     'stats.apps.StatsConfig',
     'plans.apps.PlansConfig',
+    'orders.apps.OrdersConfig',
 
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -89,6 +90,7 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'main/static'),
     os.path.join(BASE_DIR, 'stats/static'),
     os.path.join(BASE_DIR, 'plans/static'),
+    os.path.join(BASE_DIR, 'orders/static'),
 ]
 if DEBUG is False:
     STATIC_ROOT = 'static'

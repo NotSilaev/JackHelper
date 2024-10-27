@@ -1,0 +1,20 @@
+.order-data {
+    display: grid;
+    row-gap: 10px;
+    text-align: left;
+}
+.order-data-field {
+    display: grid;
+    row-gap: 5px;
+    font-size: 16px;
+}
+.order-data-field h3 {
+    color: #000000;
+}
+.order-data-field p {
+    display: block;
+    padding: 10px;
+    border-radius: 15px;
+    color: #000000;
+    background-color: #e6e6e6;
+}

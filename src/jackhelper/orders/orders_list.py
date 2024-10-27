@@ -1,0 +1,82 @@
+from jackhelper import autodealer
+
+
+def getOrdersCountAndList(city, start_date, end_date, search, tags, offset, page) -> tuple[int, list]:
+    orders = []
+    conditions, parameters = makeQueryConditionsList(search, tags)
+
+    cursor = autodealer.connect(city)
+    orders_list_query = '''
+        SELECT doh.FULLNUMBER, 
+            doh.DATE_CREATE, 
+            c.FULLNAME, 
+            SUM(sw.DISCOUNT_WORK) AS TOTAL_DISCOUNT_WORK
+        FROM DOCUMENT_OUT_HEADER doh
+        LEFT JOIN DOCUMENT_SERVICE_DETAIL ds 
+            ON doh.DOCUMENT_OUT_HEADER_ID = ds.DOCUMENT_OUT_HEADER_ID
+        LEFT JOIN DOCUMENT_OUT do 
+            ON doh.DOCUMENT_OUT_ID = do.DOCUMENT_OUT_ID
+        LEFT JOIN SERVICE_WORK sw 
+            ON doh.DOCUMENT_OUT_ID = sw.DOCUMENT_OUT_ID
+        JOIN CLIENT c ON do.CLIENT_ID = c.CLIENT_ID
+        WHERE doh.DATE_CREATE BETWEEN timestamp '{start_date} 00:00' AND timestamp '{end_date} 23:59'
+            AND doh.DOCUMENT_TYPE_ID = 11
+            AND doh.STATE = 4
+            {conditions}
+        GROUP BY doh.FULLNUMBER, doh.DATE_CREATE, c.FULLNAME
+        ORDER BY doh.DATE_CREATE;
+    '''.format(
+        start_date=start_date, 
+        end_date=end_date,
+        conditions=("AND " + "\nAND ".join(conditions) if conditions else ''),  
+    )
+    raw_orders = cursor.execute(orders_list_query, parameters).fetchall()
+    cursor.close()
+
+    orders_count = len(raw_orders)
+    row_start = 0 + offset * (page-1)
+    row_end = row_start + offset
+    if orders_count < row_start:
+        row_start = 0
+        row_end = 20
+
+    for order in raw_orders[row_start:row_end]:
+        fullnumber = order[0]
+        date = order[1].date()
+        client_fullname = order[2]
+        discount_work = order[3]
+        orders.append({
+            'fullnumber': fullnumber,
+            'date': date,
+            'metrics': [
+                {'title': 'Клиент', 'value': client_fullname},
+                {'title': 'Скидка', 'value': discount_work, 'unit': '%'},
+            ],
+        })
+        
+    return orders_count, orders
+
+
+def makeQueryConditionsList(search, tags):
+    conditions, parameters = [], []
+
+    if search:
+        if len(search) > 21:
+            raise ValueError('Максимальная длина поискового запроса - 21 символ.')
+        search_condition = "(doh.FULLNUMBER LIKE '%' || ? || '%')"
+        conditions.append(search_condition)
+        parameters.append(search.upper())
+
+    if tags:
+        tags_queries = {
+            'without_recommendations': "(ds.SPECIAL_NOTES IS NULL OR CHAR_LENGTH(ds.SPECIAL_NOTES) < 20)",
+            'without_milleage': "(ds.RUN_DURING IS NULL OR ds.RUN_BEFORE IS NULL)",
+            'without_reasons_appeal': "(ds.REASONS_APPEAL IS NULL)",
+            'with_discount_lte_10': "(sw.DISCOUNT_WORK > 0 AND sw.DISCOUNT_WORK <= 10)",
+            'with_discount_gte_11': "(sw.DISCOUNT_WORK > 0 AND sw.DISCOUNT_WORK >= 11)",
+        }
+        for t in tags:
+            if t in tags_queries: 
+                conditions.append(tags_queries[t])
+
+    return conditions, parameters

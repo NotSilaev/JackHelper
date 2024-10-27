@@ -1,0 +1,36 @@
+@media (max-width: 1200px) {
+    .orders-container {
+        display: grid;
+        row-gap: 10px;
+        width: 100%;
+        justify-content: center;
+    }  
+
+    .orders {
+        order: 2;
+        width: 100%;
+    }
+    .orders .order-block, .orders .order-block div {
+        display: grid;
+        row-gap: 5px;
+    }
+    .order-block div span {
+        display: block;
+        max-width: 200px;
+        color: #000000;
+    }    
+    .orders .pagination {
+        display: flex;
+        position: relative;
+        width: 100%;
+    }
+
+    .orders-filters {
+        order: 1;
+        display: grid;
+        position: relative;
+        width: 100%;
+        right: 0;
+        row-gap: 10px;
+    }
+}

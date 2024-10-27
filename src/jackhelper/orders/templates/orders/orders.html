@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %} Заказ-наряды {% endblock %}
+
+{% block links %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/orders.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/media/orders.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/order_window.css' %}">
+{% endblock %}
+
+{% block content %}
+    <div class="orders-container">
+        <div class="orders">
+            <ul id="orders-list"></ul>
+            <div class="pagination"></div>
+        </div>
+
+        <div class="orders-filters">
+            <div class="orders-search">
+                <img src="{% static 'icons/search.svg' %}">
+                <input id="search" placeholder="Поиск по номеру" oninput="sendRequestWithNewFilters()">
+            </div>
+            <select class="orders-city" onchange="setSelectedCity($(this).val())">
+                <option value="VLG">Волгоград</option>
+                <option value="VLZ">Волжский</option>
+            </select>
+            <div class="orders-period-dates">
+                <input id="start-date" type="date">
+                <hr class="dividing-line">
+                <input id="end-date" type="date">
+            </div>
+            <div class="orders-tags">
+                <ul>
+                    <li>
+                        <input id="without_recommendations" type="checkbox" 
+                               onchange="changeTagsList($(this).attr('id'))">
+                        <label for="without_recommendations">Без рекомендаций</label>
+                    </li>
+                    <li>
+                        <input id="without_milleage" type="checkbox"
+                               onchange="changeTagsList($(this).attr('id'))">
+                        <label for="without_milleage">Без пробега</label>
+                    </li>
+                    <li>
+                        <input id="without_reasons_appeal" type="checkbox"
+                               onchange="changeTagsList($(this).attr('id'))">
+                        <label for="without_reasons_appeal">Без причин обращения</label>
+                    </li>
+                    <li>
+                        <input id="with_discount_lte_10" type="checkbox"
+                               onchange="changeTagsList($(this).attr('id'))">
+                        <label for="with_discount_lte_10">Со скидкой до 11%</label>
+                    </li>
+                    <li>
+                        <input id="with_discount_gte_11" type="checkbox"
+                               onchange="changeTagsList($(this).attr('id'))">
+                        <label for="with_discount_gte_11">Со скидкой от 11%</label>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        var current_page = undefined;
+        function setCurrentPage(page) {
+            current_page = page;
+            sendRequestWithNewFilters()
+        }
+
+        var selected_city = undefined;
+        function setSelectedCity(city) {
+            selected_city = city;
+            current_page = undefined;
+            sendRequestWithNewFilters()
+        }
+        $("#start-date, #end-date").on('change', function() {
+            sendRequestWithNewFilters()
+        })
+
+        var tags = [];
+        function changeTagsList(tag_id) {
+            if (tags.includes(tag_id)) {
+                tag_index = tags.indexOf(tag_id);
+                tags.splice(tag_index, 1);
+            } else {
+                tags.push(tag_id);
+            };
+            current_page = undefined;
+            sendRequestWithNewFilters();
+        }
+
+        function sendRequestWithNewFilters() {
+            city = selected_city;
+            search = getValue("#search");
+            start_date = getValue("#start-date");
+            end_date = getValue("#end-date");
+            page = current_page;
+
+            getOrders(city, start_date, end_date, tags, search, page);
+        }
+    </script>
+
+    <script src="{% static 'js/get_orders.js' %}"></script>
+    <script src="{% static 'js/order_window.js' %}"></script>
+{% endblock %}
