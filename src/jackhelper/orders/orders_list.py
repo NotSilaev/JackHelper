@@ -10,7 +10,7 @@ def getOrdersCountAndList(city, start_date, end_date, search, tags, offset, page
         SELECT doh.FULLNUMBER, 
             doh.DATE_CREATE, 
             c.FULLNAME, 
-            SUM(sw.DISCOUNT_WORK) AS TOTAL_DISCOUNT_WORK
+            FLOOR(sw.DISCOUNT_WORK)
         FROM DOCUMENT_OUT_HEADER doh
         LEFT JOIN DOCUMENT_SERVICE_DETAIL ds 
             ON doh.DOCUMENT_OUT_HEADER_ID = ds.DOCUMENT_OUT_HEADER_ID
@@ -23,7 +23,7 @@ def getOrdersCountAndList(city, start_date, end_date, search, tags, offset, page
             AND doh.DOCUMENT_TYPE_ID = 11
             AND doh.STATE = 4
             {conditions}
-        GROUP BY doh.FULLNUMBER, doh.DATE_CREATE, c.FULLNAME
+        GROUP BY doh.FULLNUMBER, doh.DATE_CREATE, c.FULLNAME, FLOOR(sw.DISCOUNT_WORK)
         ORDER BY doh.DATE_CREATE;
     '''.format(
         start_date=start_date, 
@@ -34,11 +34,15 @@ def getOrdersCountAndList(city, start_date, end_date, search, tags, offset, page
     cursor.close()
 
     orders_count = len(raw_orders)
-    row_start = 0 + offset * (page-1)
-    row_end = row_start + offset
-    if orders_count < row_start:
+    if page > 0:
+        row_start = 0 + offset * (page-1)
+        row_end = row_start + offset
+        if orders_count < row_start:
+            row_start = 0
+            row_end = 20
+    else:
         row_start = 0
-        row_end = 20
+        row_end = len(raw_orders)
 
     for order in raw_orders[row_start:row_end]:
         fullnumber = order[0]

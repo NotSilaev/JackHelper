@@ -15,7 +15,7 @@ def getOrders(request):
     if tags: tags = json.loads(tags)
     search = request.GET.get('search')
     page = request.GET.get('page')
-    if page: page = int(page) 
+    if page is not None: page = int(page)
     else: page = 1
     offset = 20
 
