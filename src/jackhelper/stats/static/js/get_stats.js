@@ -118,25 +118,37 @@ function addStatsBlockMetrics(response) {
                 submetric_title = submetric['title']
                 submetric_value = submetric['value']
                 submetric_unit = submetric['unit']
+                submetric_action = submetric['on_click_javascript_action']
 
                 if (typeof submetric_value === 'number') {
                     submetric_value = numberToContinentalStyle(submetric_value);
                 }
-                if (submetric_value !== null) {
+                if (submetric_value !== undefined) {
                     if (submetric_unit !== undefined) {
                         submetric_value = `${submetric_value} ${submetric_unit}`;
+                    } else {
+                        submetric_value = `${submetric_value}`
                     }
-                };
-                if (submetric_value === null) {
+                } else {
                     submetric_value = 'Ошибка загрузки';
                 };
 
-                submetrics_list.append(`
-                    <li>
+                if (submetric_action) {
+                    submetric_block_startswith = `
+                        <li class="clickable-submetric" onclick="${submetric_action}">
+                    `
+                } else {
+                    submetric_block_startswith = '<li>'
+                }
+
+                submetric_block = (
+                    submetric_block_startswith + `
                         <p>${submetric_title}</p>
                         <h3>${submetric_value}</h3>
                     </li>
-                `)
+                `
+                )
+                submetrics_list.append(`${submetric_block}`)
             })
         }
     })

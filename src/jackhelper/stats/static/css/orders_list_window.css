@@ -1,0 +1,31 @@
+.orders-by-percent-list {
+    display: grid;
+    row-gap: 5px;
+    overflow-y: scroll;
+    height: 400px;
+    margin-bottom: 0;
+    align-items: start;
+    align-content: start;
+}
+.orders-by-percent-list li {
+    display: grid;
+    padding: 10px;
+    width: 95%;
+    height: auto;
+    row-gap: 5px;
+    border-radius: 15px;
+    background-color: #e2e2e2;
+}
+.orders-by-percent-list h3 {
+    font-size: 16px;
+    color: #000000;
+}
+.orders-by-percent-list h3 span {
+    color: #676767;
+}
+
+.orders-by-percent-list li p {
+    display: flex;
+    column-gap: 5px;
+    font-size: 14px;
+}

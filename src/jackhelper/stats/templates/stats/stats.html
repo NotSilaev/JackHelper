@@ -6,6 +6,7 @@
 {% block links %}
     <link rel="stylesheet" type="text/css" href="{% static 'css/stats.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'css/media/stats.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/orders_list_window.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -72,6 +73,7 @@
             sendSequentialRequests(city, start_date, end_date);
         }
     </script>
-    <script src="{% static 'js/get_stats.js' %}" async></script>
-    <script src="{% static 'js/period_templates.js' %}" async></script>
+    <script src="{% static 'js/orders_list_window.js' %}"></script>
+    <script src="{% static 'js/get_stats.js' %}"></script>
+    <script src="{% static 'js/period_templates.js' %}"></script>
 {% endblock %}

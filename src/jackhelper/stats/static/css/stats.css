@@ -136,4 +136,8 @@
     padding-bottom: 5px;
     border-bottom: 1px solid black;
 }
-
+.stats-block .metrics-list li .submetrics-list .clickable-submetric:hover {
+    cursor: pointer;
+    border-radius: 5px;
+    background-color: #cecece;
+}

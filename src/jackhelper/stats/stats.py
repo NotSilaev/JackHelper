@@ -1,3 +1,5 @@
+from django.urls import reverse
+
 from jackhelper import autodealer
 
 from .utils import daysInYear
@@ -255,10 +257,10 @@ class Stats:
 
         if self.short_output is False:
             orders_count_metric['submetrics'] = [
-                {'title': 'Без рекомендаций', 'value': orders[1]},
-                {'title': 'Без пробега', 'value': orders[2]},
-                {'title': 'Без причин обращения', 'value': orders[3]},
-                {'title': 'Со скидкой до 11%', 'value': orders[4]},
+                {'title': 'Без рекомендаций', 'value': orders[1], 'unit': 'шт.'},
+                {'title': 'Без пробега', 'value': orders[2], 'unit': 'шт.'},
+                {'title': 'Без причин обращения', 'value': orders[3], 'unit': 'шт.'},
+                {'title': 'Со скидкой до 11%', 'value': orders[4], 'unit': 'шт.'},
             ]
 
             orders_with_discount_gte_11_query = '''
@@ -289,7 +291,12 @@ class Stats:
                     count = i[1]
                     orders_with_discount_gte_11_count += count
                     orders_with_discount_gte_11_metric['submetrics'].append({
-                        'title': f'{percent} %', 'value': count,
+                        'title': f'{percent} %', 
+                        'value': count, 
+                        'unit': 'шт.',
+                        'on_click_javascript_action': f'''
+                            getOrdersByPercent({percent}, '{self.city}', '{self.start_date}', '{self.end_date}')
+                        '''.replace('\n', '')
                     })
             orders_with_discount_gte_11_metric['value'] = orders_with_discount_gte_11_count
             metrics.append(orders_with_discount_gte_11_metric)
