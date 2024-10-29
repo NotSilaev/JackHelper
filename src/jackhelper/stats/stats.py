@@ -82,6 +82,34 @@ class Stats:
             'unit': '₽'
         })
 
+        works_discount_amount_query = '''
+            SELECT 
+                SUM(CASE 
+                    WHEN sw.TIME_VALUE IS NOT NULL
+                    THEN (PRICE_NORM * TIME_VALUE * QUANTITY) * (sw.DISCOUNT_WORK / 100)
+
+                    ELSE (PRICE * QUANTITY) * (sw.DISCOUNT_WORK / 100)
+                END)
+            FROM SERVICE_WORK sw
+            JOIN DOCUMENT_OUT_HEADER doh
+                ON sw.DOCUMENT_OUT_ID = doh.DOCUMENT_OUT_ID
+            WHERE doh.DATE_CREATE BETWEEN timestamp '%(start_date)s 00:00' AND timestamp '%(end_date)s 23:59'
+                AND doh.DOCUMENT_TYPE_ID = 11
+                AND doh.STATE = 4;
+        '''
+        works_discount_amount = float(self.fetch(
+            works_discount_amount_query, 
+            fetch_type='one', 
+            indexes=[0], 
+            zero_if_none=True
+        ))
+        metrics.append({
+            'id': 'average_check',
+            'title': 'Скидка на работы',
+            'value': works_discount_amount,
+            'unit': '₽',
+        })  
+
         spare_parts_revenue_query = '''
                 SELECT SUM(
                     go.COST 
@@ -164,7 +192,6 @@ class Stats:
             'value': spare_parts_margin, 
             'unit': '%'
         })
-
 
         if self.short_output is False:
             stats_obj = Stats(self.city, self.start_date, self.end_date)
