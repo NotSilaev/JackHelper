@@ -1,0 +1,20 @@
+@media (max-width: 800px) {
+    .error-block {
+        display: grid;
+        row-gap: 20px;
+    }
+    .error-info {
+        text-align: center;
+    }
+    .error-img {
+        display: block;
+        margin: 0 auto;
+        height: 100px;
+    }
+    .error-code {
+        font-size: 36px;
+    }
+    .error-action_buttons {
+        justify-content: center;
+    }
+}

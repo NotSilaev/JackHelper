@@ -36,6 +36,7 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 
+    'jackhelper.middleware.ExceptionMiddleware',
     'auth.middleware.AuthMiddleware',
 ]
 
@@ -45,7 +46,8 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
-            os.path.join(BASE_DIR, 'templates')
+            os.path.join(BASE_DIR, 'templates'),
+            os.path.join(BASE_DIR, 'templates/errors'),
         ],
         'APP_DIRS': True,
         'OPTIONS': {

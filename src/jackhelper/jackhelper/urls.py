@@ -7,3 +7,5 @@ urlpatterns = [
     path('plans/', include('plans.urls')),
     path('orders/', include('orders.urls')),
 ]
+
+handler404 = 'main.views.custom_404'
