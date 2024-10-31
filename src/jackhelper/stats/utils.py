@@ -11,7 +11,7 @@ def daysInYear():
 
 def ifNoneGetDefaultValues(city, start_date, end_date) -> tuple:
     if city is None: city = 'VLG'
-
+    
     if start_date is None: start_date = datetime.date.today()
     else: start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d').date()
 

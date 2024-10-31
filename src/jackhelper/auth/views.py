@@ -9,6 +9,8 @@ def auth(request):
     return TemplateResponse(request, 'auth/auth.html')
 
 def login(request):
+    '''Checks whether user's Telegram user_id belongs to the white list.'''
+
     auth_data = request.GET
 
     user_id = int(auth_data['id'])

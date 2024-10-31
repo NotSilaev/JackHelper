@@ -1,4 +1,9 @@
 function showPlanWindow(plan_data=null) {
+    /**
+     * Сreates a plan editing modal window.
+     * @param  {[JSON]} plan_data
+     */
+
     if (plan_data !== null) {
         city = plan_data['city'];
         year = plan_data['year'];

@@ -24,6 +24,8 @@ dsn_list = {
 }
 
 def connect(city: str) -> fdb.fbcore.Cursor:
+    '''Makes a connection with AutoDealer database.'''
+
     if settings.DEBUG: dev_status = 'test'
     else: dev_status = 'prod'
 

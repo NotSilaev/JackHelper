@@ -4,6 +4,8 @@ from django.http import HttpResponse
 
 
 class AuthMiddleware:
+    '''Checks the user's "sessionid" cookie before performing the requested URL view.'''
+
     def __init__(self, next):
         self.next = next
 

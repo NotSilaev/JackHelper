@@ -3,6 +3,16 @@ $(document).ready(function() {
 });
 
 function getOrders(city, start_date, end_date, tags, search, page) {
+    /**
+     * Sends a single request to the backend.
+     * @param  {[String]} city [city code (example: "VLG")]
+     * @param  {[String]} start_date [period start date]
+     * @param  {[String]} end_date [period end date]
+     * @param  {[Array]} tags [orders tags list]
+     * @param  {[String]} search [search input text]
+     * @param  {[Number]} page [current page numbuer]
+     */
+
     endpoint_url = location.href + 'api/getOrders/'
     return $.ajax({
         url: endpoint_url,
@@ -28,6 +38,11 @@ function getOrders(city, start_date, end_date, tags, search, page) {
 }
 
 function setPaginator(pagination_data) {
+    /**
+     * Adds a pagination block.
+     * @param  {[JSON]} pagination_data
+     */
+
     let pages_count = pagination_data['pages_count'];
     let current_page = pagination_data['current_page'];
 
@@ -74,6 +89,11 @@ function setPaginator(pagination_data) {
 }
 
 function addOrdersCards(orders_data) {
+    /**
+     * Adds frames for each order data.
+     * @param  {[JSON]} orders_data
+     */
+
     let orders_count = orders_data['count'];
     var orders_list = $('#orders-list');
     orders_list.empty();

@@ -1,4 +1,11 @@
 function sendNewPlanData(city, year, month) {
+    /**
+     * Sends a request with new plan data to the backend.
+     * @param  {[String]} city [city code (example: "VLG")]
+     * @param  {[String]} year [plan year]
+     * @param  {[String]} month [plan month]
+     */
+
     revenue = $('#revenue').val()
     works_revenue = $('#works_revenue').val()
     spare_parts_revenue = $('#spare_parts_revenue').val()

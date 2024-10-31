@@ -1,4 +1,10 @@
 function showOrderWindow(fullnumber, metrics) {
+    /**
+     * Сreates a modal window with order data.
+     * @param  {[Number]} fullnumber [order fullnumber in AutoDealer]
+     * @param  {[Array]} metrics [order metrics list]
+     */
+
     var window_height = 75;
 
     metric_frames = []

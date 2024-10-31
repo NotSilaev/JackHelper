@@ -1,4 +1,9 @@
 function exceptionsHandler(responseJSON) {
+    /**
+     * Intercepts exceptions and shows error modal window or validation error messages.
+     * @param {Array} validation_errors Array of errors.
+     */
+
     if (responseJSON) {
         errors = responseJSON['errors'];
         if (errors.length > 0) {

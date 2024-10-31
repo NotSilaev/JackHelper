@@ -9,6 +9,8 @@ import datetime
 
 
 class Stats:
+    '''Implements methods for obtaining statistics blocks.'''
+
     def __init__(
         self, city: str, 
         start_date: datetime.date, 
@@ -26,6 +28,12 @@ class Stats:
 
 
     def getMetrics(self, block_id: str, short_output: bool = False) -> dict:
+        '''Obtains and returns stats block metrics.
+        
+        :param block_id: statistics block id (example: "finance").
+        :param short_output: if `True`, then only general metrics will be requested, without detailed ones.
+        '''
+
         if block_id in self.blocks_methods.keys():
             self.cursor = autodealer.connect(self.city)
 
@@ -40,6 +48,14 @@ class Stats:
 
 
     def fetch(self, query: str, fetch_type: str, indexes: list = None, zero_if_none=False):
+        '''Executes an SQL fetch query.
+        
+        :param query: SQL fetch query.
+        :param fetch_type: if `one`, the fetchone() function will be executed, if `all` - the fetchall().
+        :param indexes: list of indexes to data select from the database response.
+        :param zero_if_zone: if `True` and query response is `None`, the function returns `0` instead of `None`.
+        '''
+
         response = self.cursor.execute(
             query % {
                 'start_date': self.start_date, 

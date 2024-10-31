@@ -1,4 +1,9 @@
 function loadingSpinner(color) {
+    /**
+     * Adds a loading spinner to the HTML element.
+     * @param {String} color 'Loading spinner color'
+     */
+
     const loading_spinner =  `
         <svg class="spinner" viewBox="0 0 50 50">
             <circle class="path" cx="25" cy="25" r="20" fill="none" stroke-width="5" style="stroke: ${color};">
@@ -8,6 +13,11 @@ function loadingSpinner(color) {
 }
 
 function makeScrollable(element_id) {
+    /**
+     * Makes any HTML element scrollable.
+     * @param {String} element_id
+     */
+
     const scrollable = document.getElementById(element_id);
     scrollable.addEventListener('wheel', (event) => {
         if (event.deltaY !== 0) {
@@ -18,11 +28,21 @@ function makeScrollable(element_id) {
 }
 
 function getValue(selector) {
+    /**
+     * Returns any selector value if it isn't undefined.
+     * @param {String} element_id
+     */
+
     var value = $(selector).val();
     return value === "" ? undefined : value;
 }
 
 function numberToContinentalStyle(value) {
+    /**
+     * Translates numbers to the "Continental style" (from "1200300.40" to "1 200 300,40").
+     * @param {String} element_id
+     */
+
     if (value === null || value === undefined) {
         return "0";
     }
@@ -38,6 +58,11 @@ function numberToContinentalStyle(value) {
 }
 
 function getCookie(name) {
+    /**
+     * Obtains client cookie by name.
+     * @param {String} name 'Cookie name'
+     */
+
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {
         const cookies = document.cookie.split(';');

@@ -1,4 +1,10 @@
 function startSendingRequests(city, year) {
+    /**
+     * Starts sending sequential requests to the backend.
+     * @param  {[String]} city [city code (example: "VLG")]
+     * @param  {[String]} year [plan year]
+     */
+
     endpoint_url = location.href + 'api/getAvailableMonths/'
     $.ajax({
         url: endpoint_url,
@@ -25,6 +31,14 @@ function startSendingRequests(city, year) {
 
 
 function sendSequentialRequests(city, year, available_months) {
+    /**
+     * Sends sequential requests to the backend.
+     * @param  {[String]} city [city code (example: "VLG")]
+     * @param  {[String]} year [plan year]
+     * @param  {[Array]} available_months [list of available plan months]
+     * @return {[function]} makeRequest [makes single request]
+     */
+
     plans_list = $('#plans-list');
     plans_list.empty();
 
@@ -48,6 +62,13 @@ function sendSequentialRequests(city, year, available_months) {
 }
 
 function makeRequest(city, year, month) {
+    /**
+     * Makes a single request to the backend.
+     * @param  {[String]} city [city code (example: "VLG")]
+     * @param  {[String]} year [plan year]
+     * @param  {[String]} month [plan month]
+     */
+
     endpoint_url = location.href + 'api/getPlanMetrics/'
     return $.ajax({
         url: endpoint_url,
@@ -71,6 +92,13 @@ function makeRequest(city, year, month) {
 
 
 function addPlanBlockFrame(city, year, month) {
+    /**
+     * Adds a temporary empty frame while waiting for a server response.
+     * @param  {[String]} city [city code (example: "VLG")]
+     * @param  {[String]} year [plan year]
+     * @param  {[String]} month [plan month]
+     */
+
     plan_id = `${city}-${year}-${month}`
     
     frame = `
@@ -88,6 +116,11 @@ function addPlanBlockFrame(city, year, month) {
 }
 
 function addPlanBlockMetrics(response) {
+    /**
+     * Adds a frame with plan data.
+     * @param  {[JSON]} response [plan data]
+     */
+
     city = response['city'];
     year = response['year'];
     month = response['month'];

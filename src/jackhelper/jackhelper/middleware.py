@@ -7,6 +7,8 @@ import traceback
 
 
 class ExceptionMiddleware:
+    '''Intercepts all project exceptions and logs them in the log.'''
+
     def __init__(self, next):
         self.next = next
 

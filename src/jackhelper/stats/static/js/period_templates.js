@@ -1,4 +1,9 @@
 function setPeriodTemplate(template) {
+    /**
+     * Sets the dates in the statistics sampling period depending on the template.
+     * @param  {[String]} template [template id]
+     */
+
     const template_days = {
         'today': 0,
         'yesterday': 1,
@@ -26,6 +31,11 @@ function setPeriodTemplate(template) {
 }
 
 function formatDate(date) {
+    /**
+     * Change date type from javascript Date to String.
+     * @param  {[Date]} date [current date]
+     */
+
     let year = date.getFullYear();
     let month = (date.getMonth() + 1).toString().padStart(2, '0');
     let day = date.getDate().toString().padStart(2, '0');

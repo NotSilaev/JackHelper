@@ -1,4 +1,10 @@
 function showOrdersByPercentWindow(percent, orders) {
+    /**
+     * Сreates a modal window with a list of orders.
+     * @param  {[Number]} percent [the common orders discount percent]
+     * @param  {[Array]} orders [orders list]
+     */
+
     order_frames = [];
 
     orders.forEach(order => {
@@ -30,6 +36,14 @@ function showOrdersByPercentWindow(percent, orders) {
 
 
 function getOrdersByPercent(percent, city, start_date, end_date) {
+    /**
+     * Obtains orders by one discount percent.
+     * @param  {[Number]} percent [the common orders discount percent]
+     * @param  {[String]} city [city code (example: "VLG")]
+     * @param  {[String]} start_date [period start date]
+     * @param  {[String]} end_date [period end date]
+     */
+
     with (location) {
         if (['localhost', '127.0.0.1'].includes(hostname)) {
             href_root = protocol + '//' + hostname + ':' + port

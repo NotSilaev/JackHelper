@@ -3,6 +3,14 @@ $(document).ready(function() {
 });
 
 function sendSequentialRequests(city, start_date, end_date) {
+    /**
+     * Sends sequential requests to the backend.
+     * @param  {[String]} city [city code (example: "VLG")]
+     * @param  {[String]} start_date [period start date]
+     * @param  {[String]} end_date [period end date]
+     * @return {[function]} makeRequest [makes single request]
+     */
+
     stats_blocks_list = $('#stats-blocks-list');
     stats_blocks_list.empty();
 
@@ -30,6 +38,14 @@ function makeRequest(
     start_date,
     end_date
 ) {
+    /**
+     * Makes a single request to the backend.
+     * @param  {[String]} block [statistic block id (example: "finance")]
+     * @param  {[String]} city [city code (example: "VLG")]
+     * @param  {[String]} start_date [period start date]
+     * @param  {[String]} end_date [period end date]
+     */
+
     block_id = block['id'];
 
     endpoint_url = location.href + 'api/getStatsBlock/'
@@ -56,6 +72,11 @@ function makeRequest(
 
 
 function addStatsBlockFrame(block) {
+    /**
+     * Adds a temporary empty frame while waiting for a server response.
+     * @param  {[String]} block [statistics block id (example: "finance")]
+     */
+
     stats_blocks_list = $('#stats-blocks-list');
     
     frame = `
@@ -76,6 +97,11 @@ function addStatsBlockFrame(block) {
 }
 
 function addStatsBlockMetrics(response) {
+    /**
+     * Adds a frame with block data.
+     * @param  {[JSON]} response [stastics block data]
+     */
+
     block_id = response['block_id'];
     metrics = response['metrics'];
 

@@ -12,7 +12,7 @@ def getOrders(request):
     start_date = request.GET.get('start_date')
     end_date = request.GET.get('end_date')
     tags = request.GET.get('tags')
-    if tags: tags = json.loads(tags)
+    if tags: tags = tuple(json.loads(tags))
     search = request.GET.get('search')
     page = request.GET.get('page')
     if page is not None: page = int(page)

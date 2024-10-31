@@ -1,7 +1,28 @@
 from jackhelper import autodealer
 
+import datetime
 
-def getOrdersCountAndList(city, start_date, end_date, search, tags, offset, page) -> tuple[int, list]:
+
+def getOrdersCountAndList(
+    city: str, 
+    start_date: datetime.datetime, 
+    end_date: datetime.datetime, 
+    search: str, 
+    tags: tuple, 
+    offset: int, 
+    page: int
+) -> tuple[int, list]:
+    '''Creates a tuple with the number of orders and their list.
+    
+    :param city: city code in uppercase (example: "VLG").
+    :param start_date: the start date for the selection from the range.
+    :param end_date: the end date for the selection from the range.
+    :param search: text from "search" input.
+    :param tags: tuple of orders tags.
+    :param offset: number of orders which must be loaded.
+    :param page: current page number.
+    '''
+
     orders = []
     conditions, parameters = makeQueryConditionsList(search, tags)
 
@@ -39,7 +60,7 @@ def getOrdersCountAndList(city, start_date, end_date, search, tags, offset, page
         row_end = row_start + offset
         if orders_count < row_start:
             row_start = 0
-            row_end = 20
+            row_end = offset
     else:
         row_start = 0
         row_end = len(raw_orders)
@@ -62,6 +83,8 @@ def getOrdersCountAndList(city, start_date, end_date, search, tags, offset, page
 
 
 def makeQueryConditionsList(search, tags):
+    '''Creates a list of conditions for SQL orders selection query based on search and tags.'''
+
     conditions, parameters = [], []
 
     if search:
