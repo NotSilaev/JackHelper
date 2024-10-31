@@ -90,7 +90,7 @@ def getPlanMetrics(request):
     finance_metrics = stats_obj.getMetrics('finance', short_output=True)['metrics']
     current_revenue = finance_metrics[0]['value']
     current_works_revenue = finance_metrics[1]['value']
-    current_spare_parts_revenue = finance_metrics[2]['value']
+    current_spare_parts_revenue = finance_metrics[3]['value']
 
     normal_hours_metrics = stats_obj.getMetrics('normal_hours', short_output=True)['metrics']
     current_normal_hours = normal_hours_metrics[0]['value']
