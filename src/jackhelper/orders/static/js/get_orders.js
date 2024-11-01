@@ -46,12 +46,12 @@ function setPaginator(pagination_data) {
     let pages_count = pagination_data['pages_count'];
     let current_page = pagination_data['current_page'];
 
+    var pagination_block = $('.pagination');
+    pagination_block.empty();
+
     if (pages_count <= 1) {
         return false;
     };
-
-    var pagination_block = $('.pagination');
-    pagination_block.empty();
 
     pagination_block.append('<ul id="pages-list"></ul>');
     var pages_list = $('#pages-list');

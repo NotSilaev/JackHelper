@@ -252,44 +252,42 @@ class Stats:
     def ordersBlock(self) -> list:
         metrics = []
 
-        only_total_count = '''
-            COUNT(DISTINCT doh.DOCUMENT_OUT_HEADER_ID) AS total_orders
-        '''
-        each_count = '''
-            COUNT(DISTINCT doh.DOCUMENT_OUT_HEADER_ID) AS total_orders,
-            COUNT(DISTINCT CASE 
-                WHEN (ds.SPECIAL_NOTES IS NULL OR CHAR_LENGTH(ds.SPECIAL_NOTES) < 20) 
-                THEN doh.DOCUMENT_OUT_HEADER_ID 
-            END) AS orders_without_recommendations,
-            COUNT(DISTINCT CASE 
-                WHEN (ds.RUN_DURING IS NULL OR ds.RUN_BEFORE IS NULL) 
-                THEN doh.DOCUMENT_OUT_HEADER_ID 
-            END) AS orders_without_mileage,
-            COUNT(DISTINCT CASE 
-                WHEN ds.REASONS_APPEAL IS NULL 
-                THEN doh.DOCUMENT_OUT_HEADER_ID 
-            END) AS orders_without_reasons_appeal,
-            COUNT(DISTINCT CASE 
-                WHEN sw.DISCOUNT_WORK > 0 AND sw.DISCOUNT_WORK <= 10 
-                THEN doh.DOCUMENT_OUT_HEADER_ID 
-            END) AS orders_with_discount_lte_10
-        '''
-
-        orders_count_query = '''
-            SELECT {columns_list}
+        if self.short_output:
+            orders_count_query = '''
+                SELECT 
+                    COUNT(DISTINCT doh.DOCUMENT_OUT_HEADER_ID) AS total_orders
                 FROM DOCUMENT_OUT_HEADER doh
-            LEFT JOIN DOCUMENT_SERVICE_DETAIL ds
-                ON doh.DOCUMENT_OUT_HEADER_ID = ds.DOCUMENT_OUT_HEADER_ID
-            LEFT JOIN SERVICE_WORK sw
-                ON doh.DOCUMENT_OUT_ID = sw.DOCUMENT_OUT_ID
-            WHERE doh.DATE_CREATE BETWEEN timestamp '%(start_date)s 00:00' AND timestamp '%(end_date)s 23:59'
-                AND doh.DOCUMENT_TYPE_ID = 11
-                AND doh.STATE = 4;
-        '''.format(
-            columns_list=only_total_count if self.short_output else each_count
-        )
+                WHERE doh.DATE_CREATE BETWEEN timestamp '%(start_date)s 00:00' AND timestamp '%(end_date)s 23:59'
+                    AND doh.DOCUMENT_TYPE_ID = 11
+                    AND doh.STATE = 4
+            '''
+        else:
+            orders_count_query = '''
+                SELECT 
+                    COUNT(DISTINCT doh.DOCUMENT_OUT_HEADER_ID) AS total_orders,
+                    COUNT(DISTINCT CASE 
+                        WHEN (ds.SPECIAL_NOTES IS NULL OR CHAR_LENGTH(ds.SPECIAL_NOTES) < 20) 
+                        THEN doh.DOCUMENT_OUT_HEADER_ID 
+                    END) AS orders_without_recommendations,
+                    COUNT(DISTINCT CASE 
+                        WHEN (ds.RUN_DURING IS NULL OR ds.RUN_BEFORE IS NULL) 
+                        THEN doh.DOCUMENT_OUT_HEADER_ID 
+                    END) AS orders_without_mileage,
+                    COUNT(DISTINCT CASE 
+                        WHEN ds.REASONS_APPEAL IS NULL 
+                        THEN doh.DOCUMENT_OUT_HEADER_ID 
+                    END) AS orders_without_reasons_appeal
+                FROM DOCUMENT_OUT_HEADER doh
+                LEFT JOIN DOCUMENT_SERVICE_DETAIL ds
+                    ON doh.DOCUMENT_OUT_HEADER_ID = ds.DOCUMENT_OUT_HEADER_ID
+                LEFT JOIN SERVICE_WORK sw
+                    ON doh.DOCUMENT_OUT_ID = sw.DOCUMENT_OUT_ID
+                WHERE doh.DATE_CREATE BETWEEN timestamp '%(start_date)s 00:00' AND timestamp '%(end_date)s 23:59'
+                    AND doh.DOCUMENT_TYPE_ID = 11
+                    AND doh.STATE = 4;
+            '''
 
-        orders = self.fetch(orders_count_query, fetch_type='one')
+        orders = list(self.fetch(orders_count_query, fetch_type='one'))
         orders_count = orders[0]
         orders_count_metric = {
             'id': 'orders_count', 
@@ -297,6 +295,24 @@ class Stats:
             'value': orders_count, 
             'unit': 'шт.'
         }
+
+        orders_with_discount_lte_10_query = '''
+            SELECT 
+                doh.DOCUMENT_OUT_HEADER_ID
+            FROM DOCUMENT_OUT_HEADER doh
+            JOIN DOCUMENT_OUT do
+                ON doh.DOCUMENT_OUT_ID = do.DOCUMENT_OUT_ID
+            JOIN SERVICE_WORK sw
+                ON sw.DOCUMENT_OUT_ID = doh.DOCUMENT_OUT_ID
+            WHERE doh.DATE_CREATE BETWEEN timestamp '%(start_date)s 00:00' AND timestamp '%(end_date)s 23:59'
+                AND doh.DOCUMENT_TYPE_ID = 11
+                AND doh.STATE = 4
+            GROUP BY doh.DOCUMENT_OUT_HEADER_ID
+            HAVING FLOOR(AVG(sw.DISCOUNT_WORK)) > 0 AND FLOOR(AVG(sw.DISCOUNT_WORK)) <= 10;
+        '''
+        orders_with_discount_lte_10 = self.fetch(orders_with_discount_lte_10_query, fetch_type='all')
+        orders.append(len(orders_with_discount_lte_10))
+
 
         if self.short_output is False:
             orders_count_metric['submetrics'] = [
@@ -308,16 +324,16 @@ class Stats:
 
             orders_with_discount_gte_11_query = '''
                 SELECT 
-                    FLOOR(sw.DISCOUNT_WORK) AS discount_percentage,
+                    FLOOR(AVG(sw.DISCOUNT_WORK)) AS discount_percentage,
                     COUNT(DISTINCT doh.DOCUMENT_OUT_ID) AS discount_count
                 FROM DOCUMENT_OUT_HEADER doh
-                JOIN SERVICE_WORK sw
+                JOIN SERVICE_WORK sw 
                     ON sw.DOCUMENT_OUT_ID = doh.DOCUMENT_OUT_ID
-                WHERE sw.DISCOUNT_WORK > 10
-                    AND doh.DATE_CREATE BETWEEN timestamp '%(start_date)s 00:00' AND timestamp '%(end_date)s 23:59'
+                WHERE doh.DATE_CREATE BETWEEN timestamp '%(start_date)s 00:00' AND timestamp '%(end_date)s 23:59'
                     AND doh.DOCUMENT_TYPE_ID = 11
                     AND doh.STATE = 4
-                GROUP BY FLOOR(sw.DISCOUNT_WORK)
+                GROUP BY doh.DOCUMENT_OUT_ID
+                HAVING AVG(sw.DISCOUNT_WORK) >= 11
                 ORDER BY discount_percentage;
             '''
             orders_with_discount_gte_11 = self.fetch(orders_with_discount_gte_11_query, fetch_type='all')
@@ -328,17 +344,28 @@ class Stats:
             }
             orders_with_discount_gte_11_count = 0
             if orders_with_discount_gte_11:
+                orders_by_percents = {}
+                for order in orders_with_discount_gte_11:
+                    discount_percent = order[0]
+                    if discount_percent in orders_by_percents.keys():
+                        orders_by_percents[discount_percent] += 1
+                    else:
+                        orders_by_percents[discount_percent] = 1
+
                 orders_with_discount_gte_11_metric['submetrics'] = []
-                for i in orders_with_discount_gte_11:
-                    percent = int(i[0])
-                    count = i[1]
-                    orders_with_discount_gte_11_count += count
+                for discount_percent, orders_count in orders_by_percents.items():
+                    orders_with_discount_gte_11_count += orders_count
                     orders_with_discount_gte_11_metric['submetrics'].append({
-                        'title': f'{percent} %', 
-                        'value': count, 
+                        'title': f'{discount_percent} %', 
+                        'value': orders_count, 
                         'unit': 'шт.',
                         'on_click_javascript_action': f'''
-                            getOrdersByPercent({percent}, '{self.city}', '{self.start_date}', '{self.end_date}')
+                            getOrdersByPercent(
+                                {discount_percent}, 
+                                '{self.city}', 
+                                '{self.start_date}', 
+                                '{self.end_date}'
+                            )
                         '''.replace('\n', '')
                     })
             orders_with_discount_gte_11_metric['value'] = orders_with_discount_gte_11_count
