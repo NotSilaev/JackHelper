@@ -127,19 +127,17 @@ class Stats:
         })  
 
         spare_parts_revenue_query = '''
-                SELECT SUM(
-                    go.COST 
-                    * (go.GOODS_COUNT - go.GOODS_COUNT_RETURN) 
-                    * (1 - go.DISCOUNT / 100)
-                )
-                    FROM GOODS_OUT go
-                JOIN DOCUMENT_OUT do
-                    ON go.DOCUMENT_OUT_ID = do.DOCUMENT_OUT_ID
-                JOIN DOCUMENT_OUT_HEADER doh
-                    ON do.DOCUMENT_OUT_ID = doh.DOCUMENT_OUT_ID
-                WHERE doh.DATE_CREATE BETWEEN timestamp '%(start_date)s 00:00' AND timestamp '%(end_date)s 23:59'
-                    AND doh.DOCUMENT_TYPE_ID IN (2, 3, 11)
-                    AND STATE = 4
+            SELECT SUM(
+                go.COST 
+                * (go.GOODS_COUNT - go.GOODS_COUNT_RETURN) 
+                * (1 - go.DISCOUNT / 100)
+            )
+                FROM GOODS_OUT go
+            JOIN DOCUMENT_OUT_HEADER doh
+                ON go.DOCUMENT_OUT_ID = doh.DOCUMENT_OUT_ID
+            WHERE doh.DATE_CREATE BETWEEN timestamp '%(start_date)s 00:00' AND timestamp '%(end_date)s 23:59'
+                AND doh.DOCUMENT_TYPE_ID IN (2, 3, 11)
+                AND STATE = 4
         '''
         spare_parts_revenue = float(self.fetch(
             spare_parts_revenue_query, 
@@ -169,10 +167,8 @@ class Stats:
                 FROM GOODS_IN gi
             JOIN GOODS_OUT go
                 ON gi.GOODS_IN_ID = go.GOODS_IN_ID
-            JOIN DOCUMENT_OUT do
-                ON go.DOCUMENT_OUT_ID = do.DOCUMENT_OUT_ID
             JOIN DOCUMENT_OUT_HEADER doh
-                ON do.DOCUMENT_OUT_ID = doh.DOCUMENT_OUT_ID
+                ON go.DOCUMENT_OUT_ID = doh.DOCUMENT_OUT_ID
             WHERE doh.DATE_CREATE BETWEEN timestamp '%(start_date)s 00:00' AND timestamp '%(end_date)s 23:59'
                 AND doh.DOCUMENT_TYPE_ID IN (2, 3, 11)
                 AND STATE = 4
@@ -208,6 +204,30 @@ class Stats:
             'value': spare_parts_margin, 
             'unit': '%'
         })
+
+        spare_parts_discount_amount_query = '''
+            SELECT SUM(go.COST * (go.GOODS_COUNT - go.GOODS_COUNT_RETURN) * (go.DISCOUNT / 100))
+                FROM GOODS_OUT go
+            JOIN DOCUMENT_OUT do
+                ON go.DOCUMENT_OUT_ID = do.DOCUMENT_OUT_ID
+            JOIN DOCUMENT_OUT_HEADER doh
+                ON do.DOCUMENT_OUT_ID = doh.DOCUMENT_OUT_ID
+            WHERE doh.DATE_CREATE BETWEEN timestamp '%(start_date)s 00:00' AND timestamp '%(end_date)s 23:59'
+                AND doh.DOCUMENT_TYPE_ID IN (2, 3, 11)
+                AND STATE = 4
+        '''
+        spare_parts_amount = self.fetch(
+            spare_parts_discount_amount_query, 
+            fetch_type='one', 
+            indexes=[0], 
+            zero_if_none=True
+        )
+        metrics.append({
+            'id': 'average_check',
+            'title': 'Скидка на з/ч',
+            'value': spare_parts_amount,
+            'unit': '₽',
+        })   
 
         if self.short_output is False:
             stats_obj = Stats(self.city, self.start_date, self.end_date)
@@ -346,7 +366,7 @@ class Stats:
             if orders_with_discount_gte_11:
                 orders_by_percents = {}
                 for order in orders_with_discount_gte_11:
-                    discount_percent = order[0]
+                    discount_percent = int(order[0])
                     if discount_percent in orders_by_percents.keys():
                         orders_by_percents[discount_percent] += 1
                     else:
