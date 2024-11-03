@@ -78,6 +78,14 @@ DATABASES = {
 }
 
 
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": f"redis://{config.REDIS_HOST}:{config.REDIS_PORT}/{config.REDIS_DB}",
+    }
+}
+
+
 # Internationalization
 LANGUAGE_CODE = 'ru-RU'
 TIME_ZONE = 'UTC'

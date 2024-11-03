@@ -24,3 +24,7 @@ AUTODEALER_DB_PASS = os.environ.get("AUTODEALER_DB_PASS")
 
 TELEGRAM_LOGS_BOT_TOKEN = os.environ.get("TELEGRAM_LOGS_BOT_TOKEN")
 TELEGRAM_LOGS_BOT_USERS = list(map(int, os.environ.get("TELEGRAM_LOGS_BOT_USERS").split(',')))
+
+REDIS_HOST = os.environ.get("REDIS_HOST")
+REDIS_PORT = os.environ.get("REDIS_PORT")
+REDIS_DB = os.environ.get("REDIS_DB")

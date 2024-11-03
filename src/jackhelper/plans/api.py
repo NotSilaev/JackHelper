@@ -1,9 +1,11 @@
 from django.http import HttpResponse, JsonResponse
 
+from jackhelper import redis_client
+from stats.stats import Stats
 from .models import Plan
 from .utils import daysUntilNextMonth
-from stats.stats import Stats
 
+import json
 import datetime
 
 
@@ -82,45 +84,60 @@ def getPlanMetrics(request):
         return HttpResponse('Unavailable plan month', status=404)
 
     
-    start_date = datetime.datetime.strptime(f'{year}-{month}-1', '%Y-%m-%d')
-    end_date = start_date + datetime.timedelta(days=daysUntilNextMonth(start_date)-1)
+    cached_metrics_redis_key = f'jackhelper-plan-{city}_{year}_{month}-metrics'
+    if cached_metrics := redis_client.getValue(cached_metrics_redis_key):
+        metrics = json.loads(cached_metrics)
+    else:
+        start_date = datetime.datetime.strptime(f'{year}-{month}-1', '%Y-%m-%d')
+        end_date = start_date + datetime.timedelta(days=daysUntilNextMonth(start_date)-1)
 
-    stats_obj = Stats(city, start_date.date(), end_date.date())
+        stats_obj = Stats(city, start_date.date(), end_date.date())
 
-    finance_metrics = stats_obj.getMetrics('finance', short_output=True)['metrics']
-    current_revenue = finance_metrics[0]['value']
-    current_works_revenue = finance_metrics[1]['value']
-    current_spare_parts_revenue = finance_metrics[3]['value']
+        finance_metrics = stats_obj.getMetrics('finance', short_output=True)['metrics']
+        current_revenue = finance_metrics[0]['value']
+        current_works_revenue = finance_metrics[1]['value']
+        current_spare_parts_revenue = finance_metrics[3]['value']
 
-    normal_hours_metrics = stats_obj.getMetrics('normal_hours', short_output=True)['metrics']
-    current_normal_hours = normal_hours_metrics[0]['value']
+        normal_hours_metrics = stats_obj.getMetrics('normal_hours', short_output=True)['metrics']
+        current_normal_hours = normal_hours_metrics[0]['value']
 
-    metrics = [
-        {
-            'title': 'Выручка', 
-            'plan_value': plan.revenue, 
-            'current_value': current_revenue,
-            'metric_unit': '₽',
-        },
-        {
-            'title': 'Выручка с работ', 
-            'plan_value': plan.works_revenue, 
-            'current_value': current_works_revenue,
-            'metric_unit': '₽',
-        },
-        {
-            'title': 'Выручка с з/ч', 
-            'plan_value': plan.spare_parts_revenue, 
-            'current_value': current_spare_parts_revenue,
-            'metric_unit': '₽',
-        },
-        {
-            'title': 'Нормо-часы', 
-            'plan_value': plan.normal_hours, 
-            'current_value': current_normal_hours,
-            'metric_unit': 'ч.',
-        },
-    ]
+        metrics = [
+            {
+                'title': 'Выручка', 
+                'plan_value': plan.revenue, 
+                'current_value': current_revenue,
+                'metric_unit': '₽',
+            },
+            {
+                'title': 'Выручка с работ', 
+                'plan_value': plan.works_revenue, 
+                'current_value': current_works_revenue,
+                'metric_unit': '₽',
+            },
+            {
+                'title': 'Выручка с з/ч', 
+                'plan_value': plan.spare_parts_revenue, 
+                'current_value': current_spare_parts_revenue,
+                'metric_unit': '₽',
+            },
+            {
+                'title': 'Нормо-часы', 
+                'plan_value': plan.normal_hours, 
+                'current_value': current_normal_hours,
+                'metric_unit': 'ч.',
+            },
+        ]
+
+        now = datetime.datetime.now()
+        if year == now.year and month == now.month:
+            cached_metrics_expiration_seconds = (60**2)*3 # 3 hours
+        else:
+            cached_metrics_expiration_seconds = (60**2)*24 # 1 day
+        redis_client.setValue(
+            cached_metrics_redis_key, 
+            json.dumps(metrics), 
+            expiration=cached_metrics_expiration_seconds
+        )
 
     return JsonResponse(
         {   
