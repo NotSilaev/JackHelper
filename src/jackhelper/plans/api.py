@@ -50,6 +50,10 @@ def setMonthPlan(request):
         case 'created': http_status = 201
         case 'changed': http_status = 200
 
+    cached_metrics_redis_key = f'jackhelper-plan-{city}_{year}_{month}-metrics'
+    if redis_client.getValue(cached_metrics_redis_key):
+        redis_client.delKey(cached_metrics_redis_key)
+
     return JsonResponse(
         {'city': city, 'year': year, 'month': month}, status=http_status
     )
