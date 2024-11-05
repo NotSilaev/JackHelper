@@ -26,7 +26,8 @@ def getOrdersCountAndList(
     orders = []
     where_conditions, having_conditions, params_values = makeQueryConditionsList(search, tags)
 
-    cursor = autodealer.connect(city)
+    connect = autodealer.getConnect(city)
+    cursor = connect.cursor()
     orders_list_query = '''
         SELECT doh.FULLNUMBER, 
             doh.DATE_CREATE, 
@@ -55,7 +56,7 @@ def getOrdersCountAndList(
         having_conditions=("HAVING " + "\nAND ".join(having_conditions) if having_conditions else ''),  
     )
     raw_orders = cursor.execute(orders_list_query, params_values).fetchall()
-    cursor.close()
+    connect.close()
 
     orders_count = len(raw_orders)
     if page > 0:

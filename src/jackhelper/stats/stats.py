@@ -35,13 +35,14 @@ class Stats:
         '''
 
         if block_id in self.blocks_methods.keys():
-            self.cursor = autodealer.connect(self.city)
+            connect = autodealer.getConnect(self.city)
+            self.cursor = connect.cursor()
 
             self.short_output = short_output
             block_method = self.blocks_methods[block_id]
             block_metrics = block_method()
 
-            self.cursor.close()
+            connect.close()
             return {'block_id': block_id, 'metrics': block_metrics}
         else:
             raise ValueError('Unavailable block_id')

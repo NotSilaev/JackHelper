@@ -23,7 +23,7 @@ dsn_list = {
     },
 }
 
-def connect(city: str) -> fdb.fbcore.Cursor:
+def getConnect(city: str) -> fdb.connect:
     '''Makes a connection with AutoDealer database.'''
 
     if settings.DEBUG: dev_status = 'test'
@@ -38,4 +38,4 @@ def connect(city: str) -> fdb.fbcore.Cursor:
         charset='WIN1251'
     )
 
-    return connect.cursor()
+    return connect
