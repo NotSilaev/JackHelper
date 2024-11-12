@@ -181,13 +181,19 @@ function addPlanProgressBlock(city_data, response, period_code) {
             const metric_title = metric['title'];
             const plan_percent = metric['plan_percent'];
             const period_percent = metric['period_percent'];
+            if (period_code === 'day') {
+                var displayed_percent = period_percent;
+            }
+            else if (period_code === 'month') {
+                var displayed_percent = plan_percent;
+            };
             const circle_color = period_percent < 100 ? 'c52929' : '4caf50';
 
             const metric_circle = getCircleFrame(
                 id=`plan_${city}_${year}_${month}_${metric_title}`, 
                 width=75, heigth=75, 
                 percent=period_percent, 
-                internal_text=`${plan_percent}%`,
+                internal_text=`${displayed_percent}%`,
                 show_internal_text=true,
                 circle_color
             );
