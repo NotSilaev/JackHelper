@@ -1,0 +1,40 @@
+.plans-progress {
+    display: grid;
+    row-gap: 30px;
+}
+.plans-progress h2 {
+    font-size: 20px;
+}
+
+.plans-progress-list {
+    display: flex;
+    width: auto;
+    column-gap: 15px;
+    overflow-x: auto;
+}
+
+.plan-progress {
+    display: grid;
+    padding: 15px;
+    row-gap: 15px;
+    margin-bottom: 10px;
+}
+.plan-progress h3 span {
+    color: #474747;
+}
+.plan-metrics-progress {
+    display: flex;
+    flex-wrap: wrap;
+    column-gap: 5px;
+    row-gap: 5px;
+    width: 345px;
+}
+.plan-metrics-progress .metric-progress {
+    display: grid;
+    width: 170px;
+    padding: 10px;
+    row-gap: 5px;
+    border-radius: 20px;
+    justify-items: center;
+    background-color: #F3F3F3;
+}

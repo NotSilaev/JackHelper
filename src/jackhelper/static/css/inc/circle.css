@@ -1,0 +1,24 @@
+.circle-container {
+    position: relative;
+    width: 30px;
+    height: 30px;
+}
+.circle-bg {
+    fill: none;
+    stroke: #e6e6e6;
+    stroke-width: 15;
+}
+.circle-progress {
+    fill: none;
+    stroke-width: 10;
+    stroke-linecap: round;
+    transform: rotate(-90deg);
+    transform-origin: 50% 50%;
+}
+.percentage {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-weight: bold;
+}

@@ -3,4 +3,41 @@
 
 {% block title %} Главная {% endblock %}
 
-{% block content %}{% endblock %}
+{% block links %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/inc/circle.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/inc/plan_progress.css' %}">
+{% endblock %}
+
+{% block content %}
+    <div class="dashboard">
+        <div class="dashboard-period">
+            <button id="dashboard-period-day" 
+                    class="selected-period"
+                    onclick="sendAllDashboardBlocksRequests(period='day')">
+                По дням
+            </button>
+            <button id="dashboard-period-month" 
+                    onclick="sendAllDashboardBlocksRequests(period='month')">
+                С начала месяца
+            </button>
+        </div>
+
+        <div class="blocks">
+            <div class="plans-progress">
+                <div id="plans-progress-list" class="plans-progress-list"></div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script src="{% static 'js/metadata.js' %}"></script>
+    <script src="{% static 'js/inc/circle.js' %}"></script>
+    <script src="{% static 'js/inc/plans_progress.js' %}"></script>
+    <script src="{% static 'js/dashboard.js' %}"></script>
+
+    <script>
+        makeScrollable('plans-progress-list');
+    </script>
+{% endblock %}
