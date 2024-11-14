@@ -10,6 +10,7 @@ from .config import (
 )
 
 import fdb
+import datetime
 
 
 dsn_list = {
@@ -39,3 +40,37 @@ def getConnect(city: str) -> fdb.connect:
     )
 
     return connect
+
+
+def fetch(
+    cursor: fdb.fbcore.Cursor, 
+    query: str,
+    start_date: datetime.datetime,
+    end_date: datetime.datetime,
+    fetch_type: str, 
+    indexes: list = None, 
+    zero_if_none=False
+):
+    '''Executes an SQL fetch query.
+    
+    :param query: SQL fetch query.
+    :param fetch_type: if `one`, the fetchone() function will be executed, if `all` - the fetchall().
+    :param indexes: list of indexes to data select from the database response.
+    :param zero_if_zone: if `True` and query response is `None`, the function returns `0` instead of `None`.
+    '''
+
+    response = cursor.execute(
+        query % {
+            'start_date': start_date, 
+            'end_date': end_date
+        }
+    )
+    match fetch_type:
+        case 'one': response = response.fetchone()
+        case 'all': response = response.fetchall()
+    if indexes:
+        for i in indexes:
+            response = response[0]
+    if zero_if_none and response is None:
+        return 0
+    return response

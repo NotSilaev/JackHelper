@@ -1,7 +1,6 @@
 from django.urls import reverse
 
 from jackhelper import autodealer
-
 from .utils import daysInYear
 
 import datetime
@@ -49,29 +48,15 @@ class Stats:
 
 
     def fetch(self, query: str, fetch_type: str, indexes: list = None, zero_if_none=False):
-        '''Executes an SQL fetch query.
-        
-        :param query: SQL fetch query.
-        :param fetch_type: if `one`, the fetchone() function will be executed, if `all` - the fetchall().
-        :param indexes: list of indexes to data select from the database response.
-        :param zero_if_zone: if `True` and query response is `None`, the function returns `0` instead of `None`.
-        '''
-
-        response = self.cursor.execute(
-            query % {
-                'start_date': self.start_date, 
-                'end_date': self.end_date
-            }
+        return autodealer.fetch(
+            cursor=self.cursor,
+            query=query,
+            start_date=self.start_date,
+            end_date=self.end_date,
+            fetch_type=fetch_type,
+            indexes=indexes,
+            zero_if_none=zero_if_none
         )
-        match fetch_type:
-            case 'one': response = response.fetchone()
-            case 'all': response = response.fetchall()
-        if indexes:
-            for i in indexes:
-                response = response[0]
-        if zero_if_none and response is None:
-            return 0
-        return response
 
 
     def financeBlock(self) -> list:
