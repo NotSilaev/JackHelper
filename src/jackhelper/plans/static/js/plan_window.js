@@ -48,17 +48,6 @@ function showPlanWindow(plan_data=null) {
         var city = undefined;
         var year = undefined;
         var month = undefined;
-        function setParameterValue(param, value) {
-            if (param === 'city') {
-                selected_city = value;
-            }
-            else if (param === 'year') {
-                selected_year = value;
-            }
-            else if (param === 'month') {
-                selected_month = value;
-            }
-        }
 
         plan_frame = `
             <div class="plan-window">
