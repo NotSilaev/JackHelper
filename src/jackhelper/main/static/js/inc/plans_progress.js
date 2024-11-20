@@ -12,6 +12,10 @@ function sendPlansProgressRequests(period_code) {
     plans_progress_list = $('.plans-progress-list');
     plans_progress_list.empty();
 
+    cities.forEach(city_code => {
+        addPlanProgressFrame(city_code);
+    });
+
     let promise = $.Deferred().resolve();
     cities.forEach((city_code, city_index) => {
         const city = {
@@ -62,6 +66,29 @@ function makeRequest(city_data, year, month, period_code) {
 }
 
 
+function addPlanProgressFrame(city_code) {
+    /**
+     * Adds a frame with plan progress data.
+     * @param  {[String]} city_code [city code (example: "VLG")]
+     * @param  {[Number]} city_index [city index number in the sequ]
+     */   
+
+    const plan_progress_frame = `
+        <div id="plan_progress-${city_code}" class="plan-progress">
+            <h3>
+                ${city_titles[city_code]}
+            </h3>
+            <div class="plan-metrics-progress">
+                ${loadingSpinner(color="#000000")}
+            </div>
+        </div>
+    `;
+
+    var plans_progress_list = $('.plans-progress-list');
+    plans_progress_list.append(plan_progress_frame);
+};
+
+
 function addPlanProgressBlock(city_data, response, period_code) {
     /**
      * Adds a frame with plan progress data.
@@ -71,6 +98,7 @@ function addPlanProgressBlock(city_data, response, period_code) {
      */
 
     var plans_progress_list = $('.plans-progress-list');
+    plans_progress_list.find(`#plan_progress-${city_data['code']}`).remove()
 
     const city = city_data['code'];
     const year = response['year'];
