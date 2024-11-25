@@ -115,8 +115,9 @@ class Stats:
         spare_parts_revenue_query = '''
             SELECT SUM(
                 go.COST 
-                * (go.GOODS_COUNT - go.GOODS_COUNT_RETURN) 
+                * (go.GOODS_COUNT_FACT - go.GOODS_COUNT_RETURN) 
                 * (1 - go.DISCOUNT / 100)
+                - go.DISCOUNT_FIX
             )
                 FROM GOODS_OUT go
             JOIN DOCUMENT_OUT_HEADER doh
@@ -148,7 +149,9 @@ class Stats:
 
         input_spare_parts_cost_query = '''
             SELECT SUM(
-                gi.COST1 * (go.GOODS_COUNT - go.GOODS_COUNT_RETURN)
+                gi.COST1 
+                * (go.GOODS_COUNT_FACT - go.GOODS_COUNT_RETURN) 
+                - go.DISCOUNT_FIX
             )
                 FROM GOODS_IN gi
             JOIN GOODS_OUT go
@@ -192,8 +195,13 @@ class Stats:
         })
 
         spare_parts_discount_amount_query = '''
-            SELECT SUM(go.COST * (go.GOODS_COUNT - go.GOODS_COUNT_RETURN) * (go.DISCOUNT / 100))
-                FROM GOODS_OUT go
+            SELECT SUM(
+                go.COST 
+                * (go.GOODS_COUNT_FACT - go.GOODS_COUNT_RETURN) 
+                * (go.DISCOUNT / 100) 
+                - go.DISCOUNT_FIX
+            )
+            FROM GOODS_OUT go
             JOIN DOCUMENT_OUT do
                 ON go.DOCUMENT_OUT_ID = do.DOCUMENT_OUT_ID
             JOIN DOCUMENT_OUT_HEADER doh
