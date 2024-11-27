@@ -1,0 +1,20 @@
+@media (max-width: 600px) {
+    .salaries-header {
+        display: block;
+        width: 100%;
+    }
+
+    .salaries-filters {
+        display: grid;
+        row-gap: 5px;
+    }
+    .salaries-filters .filter {
+        justify-content: space-between;
+    }
+
+    .export-to-excel {
+        justify-content: center;
+        width: 100%;
+        margin-top: 10px;
+    }
+}

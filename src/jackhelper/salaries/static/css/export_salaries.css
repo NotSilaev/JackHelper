@@ -1,0 +1,24 @@
+.export-window-content {
+    display: grid;
+    margin-top: 15px;
+    row-gap: 15px;
+    justify-content: center;
+}
+.export-window-content loader {
+    display: block;
+    margin: 0 auto;
+}
+.export-window-content a {
+    display: block;
+    margin: 15px auto;
+    width: 200px;
+    padding: 10px;
+    border-radius: 15px;
+    color: #e2e2e2;
+    background-color: #2e2e2e;
+    transition: 0.25s;
+}
+.export-window-content a:hover {
+    background-color: #424242;
+    transition: 0.25s;
+}

@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block links %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/salaries.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/media/salaries.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/additional_metrics_window.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/export_salaries.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/salaries_blocks_details.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/inc/table.css' %}">
+{% endblock %}
+
+{% block content %}
+    <div class="salaries-header">
+        <div class="salaries-filters">
+            <div class="filter">
+                <h3>Город</h3>
+                <select id="city" onchange="setSelectedFilter(filter='city', value=$(this).val())">
+                </select>
+            </div>
+            <div class="filter">
+                <h3>Год</h3>
+                <select id="year" onchange="setSelectedFilter(filter='year', value=$(this).val())">
+                </select>
+            </div>
+            <div class="filter">
+                <h3>Месяц</h3>
+                <select id="month" onchange="setSelectedFilter(filter='month', value=$(this).val())">
+                </select>
+            </div>
+        </div>
+
+        <button class="export-to-excel" onclick="exportSalariesToExcel(city, year, month)">
+            <img src="{% static 'icons/excel-icon.png' %}" width="18">
+            Выгрузить в Excel
+        </button>
+    </div>
+
+    <div class="salaries-blocks-list"></div>
+{% endblock %}
+
+{% block scripts %}
+    <script src="{% static 'js/metadata.js' %}"></script>
+    <script src="{% static 'js/utils.js' %}"></script>
+    <script src="{% static 'js/additional_metrics.js' %}"></script>
+    <script src="{% static 'js/additional_metrics_window.js' %}"></script>
+    <script src="{% static 'js/salaries_blocks_details.js' %}"></script>
+    <script src="{% static 'js/get_salaries.js' %}"></script>
+    <script src="{% static 'js/export_salaries.js' %}"></script>
+{% endblock %}

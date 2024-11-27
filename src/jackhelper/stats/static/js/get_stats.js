@@ -63,8 +63,7 @@ function makeRequest(
             addStatsBlockMetrics(response);
         },
 
-        error: function(response) { 
-            stats_blocks_list.empty();
+        error: function(response) {
             exceptionsHandler(response.responseJSON);
         }
     });

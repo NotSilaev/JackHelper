@@ -150,7 +150,7 @@ class Stats:
         input_spare_parts_cost_query = '''
             SELECT SUM(
                 gi.COST1 
-                * (go.GOODS_COUNT_FACT - go.GOODS_COUNT_RETURN) 
+                * (go.GOODS_COUNT_FACT) 
                 - go.DISCOUNT_FIX
             )
                 FROM GOODS_IN gi

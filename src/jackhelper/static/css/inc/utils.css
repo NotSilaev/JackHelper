@@ -40,3 +40,17 @@
     height: 0.5px; 
     background-color: black;
 }
+
+.important-data {
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.copy-icon {
+    height: 20px;
+    content: url('../../icons/copy.svg');
+}
+.copy-icon:hover {
+    height: 20px;
+    content: url('../../icons/hover/copy.svg');
+}

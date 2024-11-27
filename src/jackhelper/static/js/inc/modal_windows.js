@@ -11,6 +11,7 @@ function showModalWindow(windowID, height, heading, content, accept_text, accept
     }
     if (accept_text && accept_action) {
         $('#' + windowID + ' ' + '.modal-buttons').css('display', 'flex');
+        $('#' + windowID + ' ' + '.modal-buttons .accept').css('display', 'block')
         $('#' + windowID + ' ' + '.modal-buttons .accept').html('<p>' + accept_text + '</p>');
         $('#' + windowID + ' ' + '.modal-buttons .accept').attr(
             'onclick', 'hideModalWindow("standartModal");' + '; ' + accept_action
@@ -18,6 +19,7 @@ function showModalWindow(windowID, height, heading, content, accept_text, accept
     } else {
         $('#' + windowID + ' ' + '.modal-buttons .accept').empty()
         $('#' + windowID + ' ' + '.modal-buttons .accept').attr('onclick', null)
+        $('#' + windowID + ' ' + '.modal-buttons .accept').css('display', 'none')
     }
 
     $('#' + windowID).css('display', 'table')

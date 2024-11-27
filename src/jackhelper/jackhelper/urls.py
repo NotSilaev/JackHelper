@@ -6,6 +6,7 @@ urlpatterns = [
     path('stats/', include('stats.urls')),
     path('plans/', include('plans.urls')),
     path('orders/', include('orders.urls')),
+    path('salaries/', include('salaries.urls')),
 ]
 
 handler404 = 'main.views.custom_404'

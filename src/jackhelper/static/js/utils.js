@@ -10,22 +10,31 @@ function loadingSpinner(color) {
             </circle>
         </svg>`
     return loading_spinner;
-}
+};
 
-function makeScrollable(element_id) {
+
+function makeScrollable(element_id, elements_class=null) {
     /**
      * Makes any HTML element scrollable.
      * @param {String} element_id
+     * @param {String} elements_class
      */
 
-    const scrollable = document.getElementById(element_id);
-    scrollable.addEventListener('wheel', (event) => {
-        if (event.deltaY !== 0) {
-            scrollable.scrollLeft += event.deltaY;
-        event.preventDefault();
-        }
+    if (elements_class) {
+        var scrollables_list = Array.from(document.getElementsByClassName(elements_class));
+    } else {
+        var scrollables_list = [document.getElementById(element_id)];
+    };
+    scrollables_list.forEach(scrollable => {
+        scrollable.addEventListener('wheel', (event) => {
+            if (event.deltaY !== 0) {
+                scrollable.scrollLeft += event.deltaY;
+                event.preventDefault();
+            };
+        }); 
     });
-}
+};
+
 
 function getValue(selector) {
     /**
@@ -35,7 +44,8 @@ function getValue(selector) {
 
     var value = $(selector).val();
     return value === "" ? undefined : value;
-}
+};
+
 
 function numberToContinentalStyle(value) {
     /**
@@ -55,7 +65,8 @@ function numberToContinentalStyle(value) {
     } else {
         return integerPart;
     }
-}
+};
+
 
 function getCookie(name) {
     /**
@@ -75,8 +86,36 @@ function getCookie(name) {
         }
     }
     return cookieValue;
-}
+};
+
 
 function getDaysInMonth(year, month) {
     return new Date(year, month + 1, 0).getDate();
-}  
+};
+
+
+function fullnameToInitials(fullname, last_name_index=0) {
+    /**
+     * Converts person fullname to initials (example: "Silaev Nikita Dmitrievich" -> "Silaev N. D.").
+     * @param {String} fullname [person fullname]
+     * @param {String} last_name_index [index of person last name in fullname]
+     */
+
+    var converted_name_parts = [];
+    let splitted_fullname = fullname.split(' ');
+    splitted_fullname.forEach((name_part, name_part_index) => {
+        if (name_part_index !== last_name_index) {
+            var name_part = name_part[0] + '.'
+        };
+        converted_name_parts.push(name_part);
+    });
+
+    const name_initials = converted_name_parts.join(' ');
+    return name_initials;
+};
+
+
+function isNumeric(str) {
+    const num = Number(str);
+    return !isNaN(str) && str.trim() !== '' && isFinite(num);
+};

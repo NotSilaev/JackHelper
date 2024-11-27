@@ -1,0 +1,52 @@
+.salaries-block-details {
+    display: grid;
+    padding-right: 10px;
+    row-gap: 20px;
+    height: 400px;
+    align-content: start;
+    overflow-y: scroll;
+}
+
+.employee-salaries-details {
+    display: grid;
+    padding-bottom: 10px;
+    row-gap: 10px;
+    border-bottom: 1px gray solid;
+}
+.employee-salaries-details-heading {
+    display: flex;
+    font-size: 18px;
+    justify-content: space-between;
+}
+.employee-salaries-details-metrics {
+    display: grid;
+    row-gap: 10px;
+}
+.employee-salaries-details-metrics .metric-details {
+    display: grid;
+    row-gap: 10px;
+    padding: 10px 10px 0 10px;
+    border-radius: 20px;
+    background-color: #e2e2e2;
+}
+.employee-salaries-details-metrics .metric-details h3 {
+    font-weight: 600;
+    font-size: 16px;
+}
+.employee-salaries-details-metrics .metric-details .metric-details-list {
+    display: grid;
+    row-gap: 5px;
+}
+.employee-salaries-details-metrics .metric-details .metric-details-list li {
+    display: flex;
+    font-size: 14px;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px black solid;
+    word-break: break-all;
+}
+
+.empty-metric-details {
+    font-size: 14px;
+    text-align: center;
+}
