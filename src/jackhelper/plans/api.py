@@ -116,7 +116,7 @@ def getAnnualPlanMetrics(request):
 
     annual_plan = {
         'metrics': {},
-        'monthly_plans': [],
+        'monthly_plans': {},
     }
 
     cached_plan_redis_key = f'jackhelper-annual_plan-{city}_{year}'
@@ -132,10 +132,7 @@ def getAnnualPlanMetrics(request):
                     metrics = getMonthPlan(city, year, month)
                 except ValueError:
                     continue
-            annual_plan['monthly_plans'].append({
-                'month': month,
-                'metrics': metrics,
-            })
+            annual_plan['monthly_plans'][month] = metrics
             for metric in metrics:
                 metric_id = metric['id']
 
