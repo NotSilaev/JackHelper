@@ -9,5 +9,6 @@ urlpatterns = [
 
     path('api/getAvailableMonths/', getAvailableMonths, name='get_available_months'),
     path('api/getPlanMetrics/', getPlanMetrics, name='get_plan_metrics'),
+    path('api/getAnnualPlanMetrics/', getAnnualPlanMetrics, name='get_annual_plan_metrics'),
     path('api/setMonthPlan/', setMonthPlan, name='set_month_plan'),
 ]

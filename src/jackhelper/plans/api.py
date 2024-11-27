@@ -1,9 +1,8 @@
 from django.http import HttpResponse, JsonResponse
 
 from jackhelper import redis_client
-from stats.stats import Stats
 from .models import Plan
-from .utils import daysUntilNextMonth
+from .plans import getMonthPlan
 
 import json
 import datetime
@@ -62,16 +61,16 @@ def setMonthPlan(request):
 def getAvailableMonths(request):
     city = request.GET.get('city')
     year = request.GET.get('year')
-    
-    available_months = [
-        i.month for i in Plan.objects.only('month').order_by('-month').filter(city=city, year=year)
-    ]
+
     current_month = datetime.datetime.now().month
-    if current_month in available_months:
-        current_month_index = available_months.index(current_month)
-        month_plan = available_months.pop(current_month_index)
-        available_months.insert(0, month_plan)
-    
+    if current_month <= 6:
+        month_ordering = 'month'
+    else:
+        month_ordering = '-month'
+
+    available_months = [
+        i.month for i in Plan.objects.only('month').order_by(month_ordering).filter(city=city, year=year)
+    ]
     return JsonResponse({'available_months': available_months}, status=200)
 
 
@@ -79,58 +78,15 @@ def getPlanMetrics(request):
     city = request.GET.get('city')
     year = request.GET.get('year')
     month = request.GET.get('month')
-
-    try:
-        plan = Plan.objects.only(
-            'revenue', 'works_revenue', 'spare_parts_revenue'
-        ).get(city=city, year=year, month=month)
-    except Plan.DoesNotExist:
-        return HttpResponse('Unavailable plan month', status=404)
-
     
     cached_metrics_redis_key = f'jackhelper-plan-{city}_{year}_{month}-metrics'
     if cached_metrics := redis_client.getValue(cached_metrics_redis_key):
         metrics = json.loads(cached_metrics)
     else:
-        start_date = datetime.datetime.strptime(f'{year}-{month}-1', '%Y-%m-%d')
-        end_date = start_date + datetime.timedelta(days=daysUntilNextMonth(start_date)-1)
-
-        stats_obj = Stats(city, start_date.date(), end_date.date())
-
-        finance_metrics = stats_obj.getMetrics('finance', short_output=True)['metrics']
-        current_revenue = finance_metrics[0]['value']
-        current_works_revenue = finance_metrics[1]['value']
-        current_spare_parts_revenue = finance_metrics[3]['value']
-
-        normal_hours_metrics = stats_obj.getMetrics('normal_hours', short_output=True)['metrics']
-        current_normal_hours = normal_hours_metrics[0]['value']
-
-        metrics = [
-            {
-                'title': 'Выручка', 
-                'plan_value': plan.revenue, 
-                'current_value': current_revenue,
-                'metric_unit': '₽',
-            },
-            {
-                'title': 'Выручка с работ', 
-                'plan_value': plan.works_revenue, 
-                'current_value': current_works_revenue,
-                'metric_unit': '₽',
-            },
-            {
-                'title': 'Выручка с з/ч', 
-                'plan_value': plan.spare_parts_revenue, 
-                'current_value': current_spare_parts_revenue,
-                'metric_unit': '₽',
-            },
-            {
-                'title': 'Нормо-часы', 
-                'plan_value': plan.normal_hours, 
-                'current_value': current_normal_hours,
-                'metric_unit': 'ч.',
-            },
-        ]
+        try:
+            metrics = getMonthPlan(city, year, month)
+        except ValueError:
+            return HttpResponse('Unavailable plan month', status=404)
 
         now = datetime.datetime.now()
         if year == now.year and month == now.month:
@@ -151,4 +107,55 @@ def getPlanMetrics(request):
             'metrics': metrics
         }, 
         status=200
-     )
+    )
+
+
+def getAnnualPlanMetrics(request):
+    city = request.GET.get('city')
+    year = request.GET.get('year')
+
+    annual_plan = {
+        'metrics': {},
+        'monthly_plans': [],
+    }
+
+    cached_plan_redis_key = f'jackhelper-annual_plan-{city}_{year}'
+    if cached_annual_plan := redis_client.getValue(cached_plan_redis_key):
+        annual_plan = json.loads(cached_annual_plan)
+    else:
+        for month in range(1, 12+1):
+            cached_metrics_redis_key = f'jackhelper-plan-{city}_{year}_{month}-metrics'
+            if cached_metrics := redis_client.getValue(cached_metrics_redis_key):
+                metrics = json.loads(cached_metrics)
+            else:
+                try:
+                    metrics = getMonthPlan(city, year, month)
+                except ValueError:
+                    continue
+            annual_plan['monthly_plans'].append({
+                'month': month,
+                'metrics': metrics,
+            })
+            for metric in metrics:
+                metric_id = metric['id']
+
+                if metric_id not in annual_plan['metrics'].keys():
+                    annual_plan['metrics'][metric_id] = metric
+                else:
+                    annual_plan['metrics'][metric_id]['plan_value'] += metric['plan_value']
+                    annual_plan['metrics'][metric_id]['current_value'] += metric['current_value']
+
+    redis_client.setValue(
+        cached_plan_redis_key, 
+        json.dumps(annual_plan), 
+        expiration=(60**2)*24 # 1 day
+    )
+
+    return JsonResponse(
+        {   
+            'city': city,
+            'year': year,
+            'plan': annual_plan,
+        }, 
+        status=200
+    )

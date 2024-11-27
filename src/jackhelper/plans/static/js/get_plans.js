@@ -21,6 +21,12 @@ function startSendingRequests(city, year) {
                 selected_year, 
                 available_months
             );
+
+            addPlanBlockFrame(city, year);
+            getAnnualPlan(
+                selected_city,
+                selected_year
+            )
         },
 
         error: function(response) { 
@@ -56,14 +62,14 @@ function sendSequentialRequests(city, year, available_months) {
     });
     available_months.forEach(function(month) {
         promise = promise.then(function() {
-            return makeRequest(city, year, month);
+            return getMonthlyPlan(city, year, month);
         });
     });
 }
 
-function makeRequest(city, year, month) {
+function getMonthlyPlan(city, year, month) {
     /**
-     * Makes a single request to the backend.
+     * Gets a monthly plan from the backend.
      * @param  {[String]} city [city code (example: "VLG")]
      * @param  {[String]} year [plan year]
      * @param  {[String]} month [plan month]
@@ -90,21 +96,67 @@ function makeRequest(city, year, month) {
     });
 }
 
+function getAnnualPlan(city, year) {
+    /**
+     * Gets an annual plan from the backend.
+     * @param  {[String]} city [city code (example: "VLG")]
+     * @param  {[String]} year [plan year]
+     */
+
+    endpoint_url = location.href + 'api/getAnnualPlanMetrics/'
+    return $.ajax({
+        url: endpoint_url,
+        method: 'GET',
+        data: {
+            city: city,
+            year: year,
+        },
+
+        success: function(response) {
+            const plan_data = {
+                'city': response['city'],
+                'year': response['year'],
+                'metrics': Object.values(response['plan']['metrics']),
+            };
+            addPlanBlockMetrics(plan_data);
+        },
+
+        error: function(response) { 
+            plans_list.empty();
+            exceptionsHandler(response.responseJSON);
+        }
+    });
+}
 
 function addPlanBlockFrame(city, year, month) {
     /**
      * Adds a temporary empty frame while waiting for a server response.
      * @param  {[String]} city [city code (example: "VLG")]
      * @param  {[String]} year [plan year]
-     * @param  {[String]} month [plan month]
+     * @param  {[String || undefined]} month [plan month]
      */
 
-    plan_id = `${city}-${year}-${month}`
+    if (month) {
+        var plan_id = `${city}-${year}-${month}`;
+        var plan_title = month_titles[month];
+
+        const date = new Date();
+        var current_month = date.getMonth() + 1;
+        if (current_month <= 6) {var order = month} else {var order = 12-month};
+        if (month === current_month) {
+            var order = -1;
+        }
+
+    } else {
+        var plan_title = `${year} год`;
+        var plan_id = `${city}-${year}`;
+        var order = -2; // Plan without month is annual plan and its on the first place
+    }
     
     frame = `
-        <div id="${plan_id}" class="plan-block">
+        <div id="${plan_id}" class="plan-block" style="order: ${order}">
             <div class="plan-heading">
-                <h2>${month_titles[month]}</h2>
+                <h2>${plan_title}</h2>
             </div>
             <ul class="metrics-list">
                 ${loadingSpinner(color="#000000")}
@@ -121,30 +173,42 @@ function addPlanBlockMetrics(response) {
      * @param  {[JSON]} response [plan data]
      */
 
-    city = response['city'];
-    year = response['year'];
-    month = response['month'];
-    metrics = response['metrics'];
+    var city = response['city'];
+    var year = response['year'];
+    var month = response['month'];
+    var metrics = response['metrics'];
 
-    plan_id = `${city}-${year}-${month}`
+    if (month) {
+        var plan_is_annual = false;
+        var plan_id = `${city}-${year}-${month}`;
+    } else {
+        var plan_id = `${city}-${year}`;
+        var plan_is_annual = true;
+    };
+
+    if (metrics.length === 0) {
+        $(`#${plan_id}`).remove();
+    }
 
     plan_heading = $(`#${plan_id} .plan-heading`);
-    plan_data = `{
-        'city': '${city}',
-        'year': '${year}',
-        'month': '${month}',
-        'metrics': {
-            'revenue': '${metrics[0]['plan_value']}',
-            'works_revenue': '${metrics[1]['plan_value']}',
-            'spare_parts_revenue': '${metrics[2]['plan_value']}',
-            'normal_hours': '${metrics[3]['plan_value']}',
-        }
-    }`
-    plan_heading.append(`
-        <button onclick="showPlanWindow(${plan_data})">
-            <img>
-        </button>
-    `)
+    if (plan_is_annual === false) {
+        plan_data = `{
+            'city': '${city}',
+            'year': '${year}',
+            'month': '${month}',
+            'metrics': {
+                'revenue': '${metrics[0]['plan_value']}',
+                'works_revenue': '${metrics[1]['plan_value']}',
+                'spare_parts_revenue': '${metrics[2]['plan_value']}',
+                'normal_hours': '${metrics[3]['plan_value']}',
+            }
+        }`
+        plan_heading.append(`
+            <button onclick="showPlanWindow(${plan_data})">
+                <img>
+            </button>
+        `)
+    };
 
     metrics_list = $(`#${plan_id} .metrics-list`);
     metrics_list.empty();
