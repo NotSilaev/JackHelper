@@ -1,13 +1,14 @@
 from django.urls import reverse
+from django.test import RequestFactory
 
 from jackhelper import autodealer
+from plans import api as plans_api
 from .models import SalaryMetric
 
 import json
 import datetime
 import calendar
 from openpyxl import Workbook
-import requests
 
 
 class Salaries():
@@ -711,12 +712,17 @@ class Salaries():
         }
 
         # Get current month plan
-        response = requests.get(f'''
-            http://localhost:8000/
-            plans/api/getPlanMetrics/
-            ?city={self.city}&year={self.year}&month={self.month}
-        '''.replace('\n', '').replace(' ', ''))
-        metrics = json.loads(response.text)['metrics']
+        request_factory = RequestFactory()
+        plan_request = request_factory.get(
+            '/plans/api/getPlanMetrics/', 
+            {
+                'city': self.city,
+                'year': self.year,
+                'month': self.month,
+            }
+        )
+        response = plans_api.getPlanMetrics(plan_request)
+        metrics = json.loads(response.content)['metrics']
 
 
         # Get external works hours
@@ -746,13 +752,6 @@ class Salaries():
             minimum_salary = 65_000
 
             # Normal hours salary
-            response = requests.get(f'''
-                http://localhost:8000/
-                plans/api/getPlanMetrics/
-                ?city={self.city}&year={self.year}&month={self.month}
-            '''.replace('\n', '').replace(' ', ''))
-
-            metrics = json.loads(response.text)['metrics']
             spare_parts = metrics[2]
             normal_hours = metrics[3]
 
