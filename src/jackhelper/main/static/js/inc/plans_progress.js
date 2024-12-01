@@ -193,7 +193,7 @@ function addPlanProgressBlock(city_data, response, period_code) {
                 plan_percent = 0;
             }
             let period_percent = Math.trunc((current_value / period_value) * 100, 2);
-            if (isNaN(plan_percent) || period_percent === Infinity) {
+            if (isNaN(period_percent) || period_percent === Infinity) {
                 period_percent = 0;
             }
 
