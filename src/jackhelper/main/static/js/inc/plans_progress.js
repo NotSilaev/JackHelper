@@ -106,8 +106,15 @@ function addPlanProgressBlock(city_data, response, period_code) {
     const metrics = response['metrics'];
 
     const date = new Date();
-    let day = date.getDate();
+    var day = date.getDate();
     let days_in_month = getDaysInMonth(year, month);
+    const hours = date.getHours();
+
+    const autodealer_db_update_hour = 21;
+    if (hours < autodealer_db_update_hour) {
+        date.setDate(day - 1);
+        var day = date.getDate();
+    }
 
     var metrics_percents = [];
 
