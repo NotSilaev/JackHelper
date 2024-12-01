@@ -237,6 +237,47 @@ class Stats:
                 'unit': '₽',
             })  
 
+            consumables_query = '''
+                SELECT SUM(
+                    go.COST 
+                    * (go.GOODS_COUNT_FACT - go.GOODS_COUNT_RETURN) 
+                    * (1 - go.DISCOUNT / 100)
+                    - go.DISCOUNT_FIX
+                )
+                FROM GOODS_OUT go
+                JOIN SHOP_NOMENCLATURE sn
+                    ON go.SHOP_NOMENCLATURE_ID = sn.SHOP_NOMENCLATURE_ID
+                JOIN DOCUMENT_OUT_HEADER doh
+                    ON go.DOCUMENT_OUT_ID = doh.DOCUMENT_OUT_ID
+                WHERE doh.DATE_CREATE BETWEEN timestamp '%(start_date)s 00:00' AND timestamp '%(end_date)s 23:59'
+                    AND doh.DOCUMENT_TYPE_ID IN (2, 3, 11)
+                    AND STATE = 4
+                    AND LOWER(sn.FULLNAME) = 'расходные материалы';
+            '''
+            consumables_revenue = float(self.fetch(
+                consumables_query,
+                fetch_type='one',
+                indexes=[0],
+                zero_if_none=True
+            ))
+            metrics.append({
+                'id': 'consumables_revenue',
+                'title': 'Выручка с р/м',
+                'value': consumables_revenue,
+                'unit': '₽',
+            })
+
+            try:
+                average_consumables_revenue = consumables_revenue / orders_count
+            except ZeroDivisionError:
+                average_consumables_revenue = 0
+            metrics.append({
+                'id': 'consumables_revenue',
+                'title': 'Средняя выручка с р/м',
+                'value': average_consumables_revenue,
+                'unit': '₽',
+            })
+
             days_in_year = daysInYear()
             last_year_stats_obj = Stats(
                 self.city, 
