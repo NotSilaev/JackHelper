@@ -146,6 +146,7 @@ function addSalariesBlock(response, city, year, month) {
     const block_id = response['block_data']['id'];
     const employees = response['employees'];
     const metrics_data = response['metrics_data'];
+    const salaries_amount = response['salaries_amount'];
 
     const block_salaries = $(`#${block_id}`)
     var block_salaries_heading = block_salaries.find('.salaries-block-heading');
@@ -205,12 +206,15 @@ function addSalariesBlock(response, city, year, month) {
         </button>
     `;
     const block_salaries_data_frame = `
-        <div id="salaries-data">
         <div class="table-container">
             <div class="table">
                 ${table_header_frame}
                 ${table_rows_frame}
             </div>
+        </div>
+        <div class="salaries-amount">
+            <h3>Итого</h3>
+            <p>${numberToContinentalStyle(salaries_amount)} ₽</p>
         </div>
     `;
 

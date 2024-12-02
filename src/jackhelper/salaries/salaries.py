@@ -36,7 +36,7 @@ class Salaries():
             'directors': self.__directorsBlock,
         }
         self.service_fee = (1 - self.__service_fee_percent[self.city])
-
+        
 
     def getBlockData(self, block_id: str) -> dict:
         '''Obtains and returns stats block metrics.
@@ -50,6 +50,8 @@ class Salaries():
 
             block_method = self.blocks_methods[block_id]
             block_data = block_method()
+            block_salaries_amount = self.__calculateBlockSalariesAmount(block_data)
+            block_data['salaries_amount'] = block_salaries_amount
 
             connect.close()
             return block_data
@@ -63,9 +65,6 @@ class Salaries():
         end_date = datetime.datetime.strptime(
             f'{self.year}-{self.month}-{calendar.monthrange(self.year, self.month)[1]}', '%Y-%m-%d'
         ).date()
-
-        # start_date = datetime.datetime(2024, 11, 1).date()
-        # end_date = datetime.datetime(2024, 11, 1).date()
 
         return autodealer.fetch(
             cursor=self.cursor,
@@ -114,7 +113,7 @@ class Salaries():
 
         employee_id_exceptions = {
             'VLG': [42],
-            'VLZ': [],
+            'VLZ': [15, 59],
         }
         employees_raw_list = self.cursor.execute(employees_query).fetchall()
         for e in employees_raw_list:
@@ -203,6 +202,12 @@ class Salaries():
 
         return employee_data
 
+    def __calculateBlockSalariesAmount(self, block_data: dict) -> int:
+        amount = 0
+        employees = block_data['employees']
+        for employee in employees:
+            amount += round(employee['metrics']['main'][-1]['value'], 2)
+        return amount
 
     def getAllBlocksData(self) -> list:
         salaries_blocks_metrics = []
@@ -560,7 +565,7 @@ class Salaries():
 
         hours_tariff = {
             'VLG': {
-                'standard': 330,
+                'standard': 360,
                 'rework': 430,
             },
             'VLZ': {
