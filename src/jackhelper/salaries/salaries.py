@@ -669,15 +669,20 @@ class Salaries():
                 employee_work_time += (standard_hours+aggregate_hours)
                 if 0 < employee_work_time < 150:
                     standard_hours_profit = standard_hours * work_price_part
+
+                    if standard_hours_profit > 0:
+                        metrics_details['standard_hours'].append({
+                            'description': name,
+                            'amount': standard_hours_profit,
+                        })
+
                     aggregate_hours_profit = aggregate_hours * work_price_part
-                    metrics_details['standard_hours'].append({
-                        'description': name,
-                        'amount': standard_hours_profit,
-                    })
-                    metrics_details['aggregate_hours'].append({
-                        'description': name,
-                        'amount': aggregate_hours_profit,
-                    })
+                    if aggregate_hours_profit > 0:
+                        metrics_details['aggregate_hours'].append({
+                            'description': name,
+                            'amount': aggregate_hours_profit,
+                        })
+
                 elif employee_work_time >= 150:
                     reworked_hours_profit = (standard_hours+aggregate_hours)*hours_tariff[self.city]['rework']
                     metrics_details['reworked_hours'].append({
