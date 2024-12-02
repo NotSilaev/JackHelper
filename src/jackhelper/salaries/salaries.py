@@ -626,7 +626,7 @@ class Salaries():
                 worker_percent_exec_work = work[5]
                 worker_percent_work_party = work[6]
                 worker_tariff = work[7]
-                worker_count = work[8]
+                workers_count = work[8]
 
                 employee_hours_tariff = hours_tariff[self.city]['standard']
 
