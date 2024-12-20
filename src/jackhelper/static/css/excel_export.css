@@ -22,3 +22,24 @@
     background-color: #424242;
     transition: 0.25s;
 }
+
+button.export-to-excel {
+    display: flex;
+    padding: 15px;
+    height: 40px;
+    border-radius: 30px;
+    column-gap: 10px;
+    align-items: center;
+    justify-content: center;
+    color: #000000;
+    background-color: #F3F3F3;    
+}
+button.export-to-excel:hover {
+    background-color: #e0e0e0; 
+}
+button.export-to-excel:hover img {
+    content: url('../icons/hover/excel-icon.png');
+}
+button.salaries-config:hover img {
+    content: url('../icons/hover/config-icon.svg');
+}

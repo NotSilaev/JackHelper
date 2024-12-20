@@ -7,9 +7,9 @@
     <link rel="stylesheet" type="text/css" href="{% static 'css/salaries.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'css/media/salaries.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'css/additional_metrics_window.css' %}">
-    <link rel="stylesheet" type="text/css" href="{% static 'css/export_salaries.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'css/salaries_blocks_details.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'css/inc/table.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/excel_export.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -32,10 +32,20 @@
             </div>
         </div>
 
-        <button class="export-to-excel" onclick="exportSalariesToExcel(city, year, month)">
-            <img src="{% static 'icons/excel-icon.png' %}" width="18">
-            Выгрузить в Excel
-        </button>
+        <div class="heading-buttons">
+            <button class="export-to-excel" 
+                    onclick="exportDataToExcel(
+                        'api/getSalariesExcelFileDownloadURL/',
+                        {
+                            city: city,
+                            year: year,
+                            month: month,
+                        }
+                    )">
+                <img src="{% static 'icons/excel-icon.png' %}" width="18">
+                Выгрузить в Excel
+            </button>
+        </div>
     </div>
 
     <div class="salaries-blocks-list"></div>
@@ -48,5 +58,5 @@
     <script src="{% static 'js/additional_metrics_window.js' %}"></script>
     <script src="{% static 'js/salaries_blocks_details.js' %}"></script>
     <script src="{% static 'js/get_salaries.js' %}"></script>
-    <script src="{% static 'js/export_salaries.js' %}"></script>
+    <script src="{% static 'js/excel_export.js' %}"></script>
 {% endblock %}
