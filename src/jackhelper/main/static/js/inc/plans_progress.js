@@ -60,7 +60,16 @@ function makeRequest(city_data, year, month, period_code) {
         },
 
         error: function(response) {
-            exceptionsHandler(response.responseJSON);
+            var response_json = response.responseJSON
+            if (typeof response_json === 'object') {
+                const error_text = response_json.errors[0].text
+                if (error_text === 'Запрошен недоступный план') {
+                    addEmptyPlanBlock(city_data, year, month)
+                }
+            }
+            else if (response_json === undefined) {
+                exceptionsHandler(response_json);
+            }
         }
     });
 }
@@ -255,4 +264,41 @@ function addPlanProgressBlock(city_data, response, period_code) {
         
         plans_progress_list.append(plan_progress_block);
     })();
+}
+
+function addEmptyPlanBlock(city_data, year, month) {
+    /**
+     * Adds a frame with plan progress data.
+     * @param  {[String]} city_data [contais city code and index in array]
+     * @param  {[Integer]} year [plan year]
+     * @param  {[Integer]} month [plan month]
+     */
+
+    const city = city_data['code'];
+
+    var plans_progress_list = $('.plans-progress-list');
+    plans_progress_list.find(`#plan_progress-${city}`).remove()
+
+    with (location) {
+        if (['localhost', '127.0.0.1'].includes(hostname)) {
+            href_root = protocol + '//' + hostname + ':' + port
+        } else {
+            href_root = protocol + '//' + hostname
+        }
+    }
+    plans_page_url = href_root + '/plans/'
+
+    const empty_plan_block = `
+        <div id="plan_progress-${city}_${year}_${month}" class="plan-progress" style="order: ${city_data['index']}">
+            <h3>
+                ${city_titles[city]} <span>${month_titles[month]} ${year}</span>
+            </h3>
+            <div class="empty-plan-content">
+                <p>План для текущего периода не установлен</p>
+                <a href="${plans_page_url}" target="_blank">Добавить план</a>
+            </div>
+        </div>
+    `;
+
+    plans_progress_list.append(empty_plan_block);
 }

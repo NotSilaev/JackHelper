@@ -86,7 +86,7 @@ def getPlanMetrics(request):
         try:
             metrics = getMonthPlan(city, year, month)
         except ValueError:
-            return HttpResponse('Unavailable plan month', status=404)
+            return JsonResponse({'errors': [{'text': 'Запрошен недоступный план'}]}, status=404)
 
         now = datetime.datetime.now()
         if year == now.year and month == now.month:

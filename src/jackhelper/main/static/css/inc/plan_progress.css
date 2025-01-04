@@ -18,6 +18,7 @@
     padding: 15px;
     row-gap: 15px;
     margin-bottom: 10px;
+    align-content: start;
 }
 .plan-progress h3 span {
     color: #474747;
@@ -37,4 +38,27 @@
     border-radius: 20px;
     justify-items: center;
     background-color: #F3F3F3;
+}
+
+.empty-plan-content {
+    display: grid;
+    row-gap: 20px;
+}
+.empty-plan-content p {
+    width: 300px;
+    font-size: 18px;
+    color: #424242;
+}
+.empty-plan-content a {
+    padding: 10px;
+    width: 150px;
+    text-align: center;
+    border-radius: 15px;
+    color: #ffffff;
+    background-color: #2e2e2e;
+    transition: 0.25s;
+}
+.empty-plan-content a:hover {
+    background-color: #424242;
+    transition: 0.25s;
 }
