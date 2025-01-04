@@ -1,0 +1,22 @@
+body.light {
+    background-color: #ffffff;
+    color: #000000;
+}
+
+body.dark {
+    min-height: 100vh;
+    max-height: 100vh;
+    background-color: #111111;
+}
+body.dark wrapper, body.dark nav, body.dark #nav-open, body.dark .modal-window {
+    filter: invert(0.95) hue-rotate(180deg);
+}
+body.dark nav footer .user-data img {
+    filter: none;
+}
+
+@media (max-width: 1000px) {
+    body.dark #navbar {
+        background-color: #edededde;
+    }
+}

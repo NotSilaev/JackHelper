@@ -42,6 +42,15 @@
     </ul>
 
     <footer>
+        <div class="theme-swither">
+            <button id="light" class="active-theme">
+                <img src="{% static 'icons/themes/light.svg' %}">
+            </button>
+            <button id="dark">
+                <img src="{% static 'icons/themes/dark.svg' %}">
+            </button>
+        </div>
+
         <div class="user-data">
             {% with request.session.user as user %}
                 {% if user.photo_url %}
@@ -61,3 +70,5 @@
         </div>
     </footer>
 </nav>
+
+<script src="{% static 'js/inc/theme_swither.js' %}"></script>

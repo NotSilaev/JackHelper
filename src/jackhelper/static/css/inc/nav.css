@@ -104,3 +104,43 @@ footer .user-data p {
 #nav-close {
     display: none;
 }
+
+.theme-swither {
+    display: flex;
+    padding: 5px;
+    margin: 15px auto;
+    width: 80px;
+    border-radius: 50px;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #e4e4e4;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+.theme-swither button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    border-radius: 50%;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+.theme-swither button img {
+    height: 18px;
+    transition: filter 0.3s ease;
+}
+.theme-swither button:hover {
+    background-color: #d4d2d2;
+    transform: scale(1.1);
+}
+.theme-swither button.active-theme {
+    background-color: #d4d2d2;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+.theme-swither button.active-theme:hover {
+    transform: scale(1.15);
+}
+

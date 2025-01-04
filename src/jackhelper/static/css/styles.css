@@ -1,11 +1,11 @@
 @import 'reset.css';
 @import 'fonts.css';
+@import 'themes.css';
 
 /* Main settings */
 
 body {
     font-family: "Inter";
-    background: #ffffff;
 }
 
 wrapper {
