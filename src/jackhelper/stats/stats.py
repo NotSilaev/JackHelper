@@ -278,7 +278,9 @@ class Stats:
                 'unit': '₽',
             })
 
-            days_in_year = daysInYear()
+
+            last_year = self.start_date.year - 1
+            days_in_year = daysInYear(year=last_year)
             last_year_stats_obj = Stats(
                 self.city, 
                 self.start_date-datetime.timedelta(days=days_in_year),
