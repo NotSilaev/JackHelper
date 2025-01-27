@@ -29,6 +29,7 @@ function getOrders(city, start_date, end_date, tags, search, page) {
         success: function(response) {
             setPaginator(response['pagination']);
             addOrdersCards(response['orders']);
+            setOrdersCount(response['orders']['count'])
         },
 
         error: function(response) {
@@ -140,4 +141,19 @@ function addOrdersCards(orders_data) {
             });
         }
     });
+}
+
+
+function setOrdersCount(orders_count) {
+    /**
+     * Adds a number of finded orders.
+     * @param  {[Integer]} orders_count
+     */
+
+    const orders_count_element = $('.orders-count');
+    orders_count_element.empty();
+    orders_count_element.append(`
+        <p>Найдено<p>
+        <p><span id="orders-count">${orders_count}</span> ЗН</p>    
+    `);
 }

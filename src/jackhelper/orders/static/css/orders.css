@@ -131,3 +131,15 @@
 .orders-filters .orders-tags ul li {
     border-bottom: 1px solid black;
 }
+
+
+.orders-count {
+    display: flex;
+    padding: 10px;
+    border-radius: 15px;
+    justify-content: space-between;
+    background-color: #F3F3F3;
+}
+.orders-count p span {
+    font-weight: 500;
+}
