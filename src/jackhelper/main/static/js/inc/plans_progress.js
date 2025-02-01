@@ -110,8 +110,8 @@ function addPlanProgressBlock(city_data, response, period_code) {
     plans_progress_list.find(`#plan_progress-${city_data['code']}`).remove()
 
     const city = city_data['code'];
-    const year = response['year'];
-    const month = response['month'];
+    var year = Number(response['year']);
+    var month = Number(response['month']);
     const metrics = response['metrics'];
 
     const date = new Date();
@@ -121,8 +121,13 @@ function addPlanProgressBlock(city_data, response, period_code) {
 
     const autodealer_db_update_hour = 21;
     if (hours < autodealer_db_update_hour) {
-        date.setDate(day - 1);
-        var day = date.getDate();
+        date.setDate(date.getDate() - 1);
+        var date_year =date.getFullYear();
+        var date_month =date.getMonth() + 1;
+        day = date.getDate();
+
+        if (date_year !== year) { year = date_year };
+        if (date_month !== month) { month = date_month };
     }
 
     var metrics_percents = [];
