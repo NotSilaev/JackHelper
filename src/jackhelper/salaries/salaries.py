@@ -14,16 +14,62 @@ from openpyxl import Workbook
 class Salaries():
     '''Implements methods for obtaining salaries blocks.'''
     
-    __service_fee_percent = {
-        'VLG': 0.1,
-        'VLZ': 0.1,
-    }
     __blocks_titles = {
         'service_consultants': 'Сервисные консультанты',
         'spare_parts_managers': 'Сотрудники ОЗЧ',
         'mechanics': 'Механики',
         'directors': 'Директора',
     }
+
+    __config = {
+        'VLG': {
+            'service_fee': 0.15,
+
+            'service_consultants': {
+                'works_percent': 0.15,
+                'spare_parts_percent': 0.25,
+            },
+            'spare_parts_managers': {
+                'spare_parts_percent': 0.25,
+                'external_works_percent': 0.3,
+            },
+            'mechanics': {
+                'normal_hours_tariff': {
+                    'standard': 360,
+                    'overworking': 430,
+                    'swap': {
+                        'from': [330, 350],
+                        'to': 360,
+                    },
+                },
+                'overwoking_threshold': 150,
+            },
+        },
+        'VLZ': {
+            'service_fee': 0.15,
+
+            'service_consultants': {
+                'works_percent': 0.15,
+                'spare_parts_percent': 0.25,
+            },
+            'spare_parts_managers': {
+                'spare_parts_percent': 0.25,
+                'external_works_percent': 0.3,
+            },
+            'mechanics': {
+                'normal_hours_tariff': {
+                    'standard': 480,
+                    'overworking': 480,
+                    'swap': {
+                        'from': [400, 420],
+                        'to': 430,
+                    },
+                },
+                'overwoking_threshold': 150,
+            },
+        },
+    }
+
 
     def __init__(self, city: str, year: int, month: int):
         self.city = city
@@ -35,25 +81,31 @@ class Salaries():
             'mechanics': self.__mechanicsBlock,
             'directors': self.__directorsBlock,
         }
-        self.service_fee = (1 - self.__service_fee_percent[self.city])
+        self.service_fee = (1 - self.__config[self.city]['service_fee'])
         
 
-    def getBlockData(self, block_id: str) -> dict:
+    def getBlockData(self, block_id: str, detailed: bool = False) -> dict:
         '''Obtains and returns stats block metrics.
         
         :param block_id: salaries block id (example: "service_consultants").
+        :param detailed: if `True', the block details will be returned. Used when requesting data inside other blocks.
         '''
 
         if block_id in self.blocks_methods.keys():
-            connect = autodealer.getConnect(self.city)
-            self.cursor = connect.cursor()
+            if detailed is False:
+                connect = autodealer.getConnect(self.city)
+                self.cursor = connect.cursor()
 
             block_method = self.blocks_methods[block_id]
-            block_data = block_method()
+            if detailed:
+                block_data = block_method(detailed)
+            else:
+                block_data = block_method()
             block_salaries_amount = self.__calculateBlockSalariesAmount(block_data)
             block_data['salaries_amount'] = block_salaries_amount
 
-            connect.close()
+            if detailed is False:
+                connect.close()
             return block_data
         else:
             raise ValueError('Unavailable block_id')
@@ -73,7 +125,9 @@ class Salaries():
             end_date=end_date,
             fetch_type=fetch_type,
             indexes=indexes,
-            zero_if_none=zero_if_none
+            zero_if_none=zero_if_none,
+            convert_decimal_to_float=True,
+            as_dict=True
         )
 
     def __getEmployees(self, block_id):        
@@ -89,31 +143,48 @@ class Salaries():
                 WHERE EMPLOYEE_ID = {directors_employee_ids[self.city]}
             '''
         else:
-            jobs_ids = {
+            department_employees = {
                 'VLG': {
-                    'service_consultants': ['4'],
-                    'spare_parts_managers': ['6'],
-                    'mechanics': ['5'],
+                    'service_consultants': {
+                        'job_ids': [4],
+                    },
+                    'spare_parts_managers': {
+                        'job_ids': [6],
+                    },
+                    'mechanics': {
+                        'job_ids': [5],
+                    },
                 },
                 'VLZ': {
-                    'service_consultants': ['1'],
-                    'spare_parts_managers': ['5'],
-                    'mechanics': ['2', '3'],
+                    'service_consultants': {
+                        'job_ids': [1],
+                    },
+                    'spare_parts_managers': {
+                        'job_ids': [5],
+                    },
+                    'mechanics': {
+                        'job_ids': [2, 3],
+                        'employee_ids': [58, 68]
+                    },
                 },
             }
-            department_ids = jobs_ids[self.city][block_id]
+            department_employees_block = department_employees[self.city][block_id]
+            job_ids_str = ','.join(map(str, department_employees_block.get('job_ids', '0')))
+            employee_ids_str = ','.join(map(str, department_employees_block.get('employee_ids', '0')))
 
             employees_query = f'''
                 SELECT DISTINCT e.EMPLOYEE_ID, e.FULLNAME
                     FROM EMPLOYEE e
                 JOIN ORGANIZATION_STRUCTURE os
                     ON e.EMPLOYEE_ID = os.EMPLOYEE_ID
-                WHERE os.JOB_ID IN ({','.join(department_ids)})
+                WHERE 
+                    os.JOB_ID IN ({job_ids_str})
+                    OR e.EMPLOYEE_ID IN ({employee_ids_str})
             '''
 
         employee_id_exceptions = {
-            'VLG': [42],
-            'VLZ': [15, 59],
+            'VLG': [31, 42, 47, 59, 61, 77],
+            'VLZ': [15, 17, 59],
         }
         employees_raw_list = self.cursor.execute(employees_query).fetchall()
         for e in employees_raw_list:
@@ -215,6 +286,7 @@ class Salaries():
             salaries_blocks_metrics.append(self.getBlockData(sb_id))
         return salaries_blocks_metrics
 
+
     def __serviceConsultantsBlock(self):
         block_data = {
             'block_data': {
@@ -233,6 +305,7 @@ class Salaries():
         }
 
         employees = self.__getEmployees(block_id='service_consultants')
+
         for employee in employees:
             employee_id = employee['id']
 
@@ -245,15 +318,17 @@ class Salaries():
             # Employee works
             works_query = f'''
                 SELECT
+                    sw.SERVICE_WORK_ID,
+                    doh.FULLNUMBER,
                     sw.NAME,
                     sw.PRICE, 
                     sw.TIME_VALUE, 
                     sw.QUANTITY,  
                     sw.PRICE_NORM, 
                     sw.DISCOUNT_WORK,
-                    sw_ms.PARTY,
-                    bs.EMPLOYEE_ID, 
-                    bs.PERCENT_EXEC_WORK
+                    sw_ms.PARTY AS MANAGER_PARTY,
+                    bs.EMPLOYEE_ID AS WORKER_EMPLOYEE_ID, 
+                    bs.PERCENT_EXEC_WORK AS WORKER_PERCENT_EXEC_WORK
                 FROM SERVICE_WORK sw
                 JOIN BRIGADE_STRUCTURE bs
                     ON sw.SERVICE_WORK_ID = bs.SERVICE_WORK_ID
@@ -267,6 +342,7 @@ class Salaries():
                     ON sw_ms.MANAGER_ID = m.MANAGER_ID
                 JOIN ORGANIZATION_STRUCTURE os
                     ON m.ORGANIZATION_STRUCTURE_ID = os.ORGANIZATION_STRUCTURE_ID
+
                 WHERE doh.DATE_CREATE BETWEEN timestamp '%(start_date)s 00:00' AND timestamp '%(end_date)s 23:59'
                     AND doh.DOCUMENT_TYPE_ID = 11
                     AND doh.STATE = 4
@@ -278,21 +354,22 @@ class Salaries():
             )
 
             for work in works:
-                name = work[0]
-                price = work[1]
-                time_value = work[2]
-                quantity = work[3]
-                price_norm = work[4]
-                discount = work[5]
-                manager_party = work[6]
-                worker_employee_id = work[7]
-                worker_percent_exec_work = work[8]
+                document_fullnumber = work['FULLNUMBER']
+                name = work['NAME']
+                price = work['PRICE']
+                time_value = work['TIME_VALUE']
+                quantity = work['QUANTITY']
+                price_norm = work['PRICE_NORM']
+                discount = work['DISCOUNT_WORK']
+                manager_party = work['MANAGER_PARTY']
+                worker_employee_id = work['WORKER_EMPLOYEE_ID']
+                worker_percent_exec_work = work['WORKER_PERCENT_EXEC_WORK']
 
                 discount = (1 - discount / 100)
                 if time_value:
-                    work_price = round((float(price_norm) * float(time_value) * quantity) * discount, 2)
+                    work_price = round((price_norm * time_value * quantity) * discount, 2)
                 else:
-                    work_price = round((float(price) * quantity) * discount, 2)
+                    work_price = round((price * quantity) * discount, 2)
 
                 # Calculation employee work profit for external work
                 if worker_employee_id is None:
@@ -311,27 +388,28 @@ class Salaries():
                     )
                     employee_work_profit = work_total_profit * employee_percent * manager_party
                     metrics_details['external_works'].append({
-                        'description': name,
+                        'description': f'({document_fullnumber}) {name}',
                         'amount': employee_work_profit,
                     })
                     continue
-
+                
                 # Calculation employee work profit for local work
-                employee_percent = 0.1
-                employee_work_profit = work_price * self.service_fee * employee_percent * manager_party
+                works_percent = works_percent = self.__config[self.city]['service_consultants']['works_percent']
+                employee_work_profit = work_price * self.service_fee * works_percent * manager_party
                 metrics_details['local_works'].append({
-                    'description': name,
+                    'description':  f'({document_fullnumber}) {name}',
                     'amount': employee_work_profit,
                 })
-
-
+                
             # Employee spare_parts
             spare_parts_query = f'''
                 SELECT 
+                    doh.FULLNUMBER,
+                    doh.DOCUMENT_TYPE_ID,
                     sn.FULLNAME,
-                    gi.COST1,
-                    go.COST,
-                    go.GOODS_COUNT_FACT,
+                    gi.COST1 AS PURCHASE_PRICE,
+                    go.COST AS SALE_PRICE,
+                    go.GOODS_COUNT_FACT AS GOODS_COUNT,
                     go.DISCOUNT,
                     go.DISCOUNT_FIX,
                     go.GOODS_COUNT_RETURN
@@ -358,13 +436,22 @@ class Salaries():
                 fetch_type='all'
             )
             for spare_part in spare_parts:
-                name = spare_part[0]
-                purchase_price = float(spare_part[1])
-                sale_price = float(spare_part[2])
-                count = float(spare_part[3])
-                discount = spare_part[4]
-                discount_fix = float(spare_part[5])
-                count_return = float(spare_part[6])
+                document_fullnumber = spare_part['FULLNUMBER']
+                document_type_id = spare_part['DOCUMENT_TYPE_ID']
+                name = spare_part['FULLNAME']
+                purchase_price = spare_part['PURCHASE_PRICE']
+                sale_price = spare_part['SALE_PRICE']
+                count = spare_part['GOODS_COUNT']
+                discount = spare_part['DISCOUNT']
+                discount_fix = spare_part['DISCOUNT_FIX']
+                count_return = spare_part['GOODS_COUNT_RETURN']
+                
+                if document_type_id == 2:
+                    document_type_code = 'РН'
+                elif document_type_id == 3:
+                    document_type_code = 'ТЧ'
+                elif document_type_id == 11:
+                    document_type_code = 'ЗН'
 
                 if name.lower() == 'расходные материалы':
                     continue
@@ -373,14 +460,16 @@ class Salaries():
                 spare_part_revenue = round(
                     sale_price 
                     * (count - count_return) 
-                    *  (1 - discount / 100)
+                    * (1 - discount / 100)
                     - (purchase_price * count) 
                     - discount_fix
                 , 2)
-                employee_percent = 0.25
-                employee_spare_part_profit = spare_part_revenue * employee_percent
+                spare_parts_percent = works_percent = (
+                    self.__config[self.city]['service_consultants']['spare_parts_percent']
+                )
+                employee_spare_part_profit = spare_part_revenue * spare_parts_percent
                 metrics_details['spare_parts'].append({
-                    'description': name,
+                    'description': f'({document_type_code}: {document_fullnumber}) {name}',
                     'amount': employee_spare_part_profit,
                 })
 
@@ -414,15 +503,15 @@ class Salaries():
 
         # Spare parts revenue
         spare_parts_query = f'''
-            SELECT 
+            SELECT
+                doh.DOCUMENT_TYPE_ID,
                 sn.FULLNAME,
-                gi.COST1,
-                go.COST,
-                go.GOODS_COUNT_FACT,
+                gi.COST1 AS PURCHASE_PRICE,
+                go.COST AS SALE_PRICE,
+                go.GOODS_COUNT_FACT AS GOODS_COUNT,
                 go.DISCOUNT,
                 go.DISCOUNT_FIX,
-                go.GOODS_COUNT_RETURN,
-                doh.DOCUMENT_TYPE_ID
+                go.GOODS_COUNT_RETURN
             FROM GOODS_OUT go
             JOIN GOODS_IN gi
                 ON gi.GOODS_IN_ID = go.GOODS_IN_ID
@@ -439,14 +528,21 @@ class Salaries():
             fetch_type='all'
         )
         for spare_part in spare_parts:
-            name = spare_part[0]
-            purchase_price = float(spare_part[1])
-            sale_price = float(spare_part[2])
-            count = float(spare_part[3])
-            discount = spare_part[4]
-            discount_fix = float(spare_part[5])
-            count_return = float(spare_part[6])
-            document_type_id = spare_part[7]
+            document_type_id = spare_part['DOCUMENT_TYPE_ID']
+            name = spare_part['FULLNAME']
+            purchase_price = spare_part['PURCHASE_PRICE']
+            sale_price = spare_part['SALE_PRICE']
+            count = spare_part['GOODS_COUNT']
+            discount = spare_part['DISCOUNT']
+            discount_fix = spare_part['DISCOUNT_FIX']
+            count_return = spare_part['GOODS_COUNT_RETURN']
+            
+            if document_type_id == 2:
+                document_type_code = 'РН'
+            elif document_type_id == 3:
+                document_type_code = 'ТЧ'
+            elif document_type_id == 11:
+                document_type_code = 'ЗН'
 
             if name.lower() == 'расходные материалы':
                 continue
@@ -459,8 +555,8 @@ class Salaries():
                 - (purchase_price * count) 
                 - discount_fix
             , 2)
-            department_percent = 0.3
-            spare_part_profit = spare_part_revenue * department_percent
+            spare_parts_percent = self.__config[self.city]['spare_parts_managers']['spare_parts_percent']
+            spare_part_profit = spare_part_revenue * spare_parts_percent
             
             if document_type_id == 11:
                 spare_parts_revenue += spare_part_profit
@@ -476,7 +572,7 @@ class Salaries():
                 sw.QUANTITY,  
                 sw.PRICE_NORM, 
                 sw.DISCOUNT_WORK,
-                bs.PERCENT_EXEC_WORK
+                bs.PERCENT_EXEC_WORK AS WORKER_PERCENT_EXEC_WORK
             FROM SERVICE_WORK sw
             JOIN BRIGADE_STRUCTURE bs
                 ON sw.SERVICE_WORK_ID = bs.SERVICE_WORK_ID
@@ -495,18 +591,18 @@ class Salaries():
         )
 
         for work in external_works:
-            price = work[0]
-            time_value = work[1]
-            quantity = work[2]
-            price_norm = work[3]
-            discount = work[4]
-            worker_percent_exec_work = work[5]
+            price = work['PRICE']
+            time_value = work['TIME_VALUE']
+            quantity = work['QUANTITY']
+            price_norm = work['PRICE_NORM']
+            discount = work['DISCOUNT_WORK']
+            worker_percent_exec_work = work['WORKER_PERCENT_EXEC_WORK']
 
             discount = (1 - discount / 100)
             if time_value:
-                work_price = round((float(price_norm) * float(time_value) * quantity) * discount, 2)
+                work_price = round(price_norm * time_value * quantity * discount, 2)
             else:
-                work_price = round((float(price) * quantity) * discount, 2)
+                work_price = round(price * quantity * discount, 2)
 
             external_work_price_part = work_price * (worker_percent_exec_work / 100)
 
@@ -518,11 +614,10 @@ class Salaries():
             ])):
                 continue
 
-            department_percent = 0.3
-            department_work_profit = (
-                (work_price - external_work_price_part) * department_percent * self.service_fee
+            external_works_percent = self.__config[self.city]['spare_parts_managers']['external_works_percent']
+            external_works_revenue += (
+                (work_price - external_work_price_part) * external_works_percent * self.service_fee
             )
-            external_works_revenue += department_work_profit
 
         if (spare_parts_revenue + good_receipts_revenue + external_works_revenue) > 0:
             employees = self.__getEmployees(block_id='spare_parts_managers')
@@ -546,7 +641,7 @@ class Salaries():
 
         return block_data
 
-    def __mechanicsBlock(self):
+    def __mechanicsBlock(self, detailed: bool = False):
         block_data = {
             'block_data': {
                 'id': 'mechanics',
@@ -557,20 +652,20 @@ class Salaries():
                 {'id': 'employee', 'title': 'Сотрудник'},
                 {'id': 'standard_hours', 'title': 'Обычные часы'},
                 {'id': 'aggregate_hours', 'title': 'Агрегатные часы'},
-                {'id': 'reworked_hours', 'title': 'Часы переработок'},
+                {'id': 'overworking_hours', 'title': 'Часы переработок'},
                 {'id': 'additional_metrics_amount', 'title': 'Бонусы/вычеты'},
                 {'id': 'amount', 'title': 'Сумма'},
             ],
         }
 
-        hours_tariff = {
-            'VLG': {
-                'standard': 360,
-                'rework': 430,
+        works_data = {
+            'standard': {
+                'hours': 0,
+                'list': [],
             },
-            'VLZ': {
-                'standard': 480,
-                'rework': 480,
+            'aggregate': {
+                'hours': 0,
+                'list': [],
             },
         }
 
@@ -581,23 +676,27 @@ class Salaries():
             metrics_details = {
                 'standard_hours': [],
                 'aggregate_hours': [],
-                'reworked_hours': [],
+                'overworking_hours': [],
             }
 
             # Mechanic salary
             works_query = f'''
                 SELECT
+                    doh.FULLNUMBER,
                     sw.NAME,
                     sw.PRICE, 
                     sw.TIME_VALUE, 
                     sw.QUANTITY,  
                     sw.PRICE_NORM,
-                    bs.PERCENT_EXEC_WORK,
-                    bs.PERCENT_WORK_PARTY,
-                    bs.TARIFF,
-                    (SELECT COUNT(DISTINCT bs_inner.EMPLOYEE_ID)
-                    FROM BRIGADE_STRUCTURE bs_inner
-                    WHERE bs_inner.SERVICE_WORK_ID = sw.SERVICE_WORK_ID) AS EMPLOYEE_COUNT
+                    bs.PERCENT_EXEC_WORK AS WORKER_PERCENT_EXEC_WORK,
+                    bs.PERCENT_WORK_PARTY AS WORKER_PERCENT_WORK_PARTY,
+                    bs.EMPLOYEE_ID AS WORKER_EMPLOYEE_ID,
+                    bs.TARIFF AS WORKER_TARIFF,
+                    (
+                        SELECT COUNT(DISTINCT bs_inner.EMPLOYEE_ID)
+                        FROM BRIGADE_STRUCTURE bs_inner
+                        WHERE bs_inner.SERVICE_WORK_ID = sw.SERVICE_WORK_ID
+                    ) AS WORKERS_COUNT
                 FROM SERVICE_WORK sw
                 JOIN BRIGADE_STRUCTURE bs
                     ON sw.SERVICE_WORK_ID = bs.SERVICE_WORK_ID
@@ -616,83 +715,138 @@ class Salaries():
                 fetch_type='all'
             )
 
-            employee_work_time = 0
-            for work in works:
-                name = work[0]
-                price = work[1]
-                time_value = work[2]
-                quantity = work[3]
-                price_norm = work[4]
-                worker_percent_exec_work = work[5]
-                worker_percent_work_party = work[6]
-                worker_tariff = work[7]
-                workers_count = work[8]
+            standard_hours_tariff = self.__config[self.city]['mechanics']['normal_hours_tariff']['standard']
+            overworking_hours_tariff = (
+                self.__config[self.city]['mechanics']['normal_hours_tariff']['overworking']
+            )
+            overwoking_threshold = self.__config[self.city]['mechanics']['overwoking_threshold']
 
-                employee_hours_tariff = hours_tariff[self.city]['standard']
+            employee_work_time = 0
+            
+            for work in works:
+                document_fullnumber = work['FULLNUMBER']
+                name = work['NAME']
+                price = work['PRICE']
+                time_value = work['TIME_VALUE']
+                quantity = work['QUANTITY']
+                price_norm = work['PRICE_NORM']
+                worker_percent_exec_work = work['WORKER_PERCENT_EXEC_WORK']
+                worker_percent_work_party = work['WORKER_PERCENT_WORK_PARTY']
+                worker_employee_id = work['WORKER_EMPLOYEE_ID']
+                worker_tariff = work['WORKER_TARIFF']
+                workers_count = work['WORKERS_COUNT']
+
+                tariff_swap = self.__config[self.city]['mechanics']['normal_hours_tariff']['swap']
+                if worker_tariff in tariff_swap['from']:
+                    worker_tariff = tariff_swap['to']
 
                 if worker_percent_exec_work > 0:
-                    work_price_part = (worker_percent_exec_work / 100) * (float(price_norm) * self.service_fee)
+                    work_price_part = (worker_percent_exec_work / 100) * (price_norm * self.service_fee)
                 elif worker_percent_exec_work == 0 and worker_tariff == 0:
-                    work_price_part = employee_hours_tariff
+                    work_price_part = standard_hours_tariff
                 else:
                     work_price_part = worker_tariff
-
 
                 standard_hours = 0
                 aggregate_hours = 0
 
-                if time_value:
-                    time_value = float(time_value)
-                else:
-                    time_value = float(price / price_norm)
+                if not time_value:
+                    time_value = price / price_norm
 
                 if self.city == 'VLG':
+                    # Common tariff
                     if worker_percent_work_party > 0:
-                        if work_price_part <= employee_hours_tariff:
+                        if work_price_part <= standard_hours_tariff:
                             standard_hours += time_value * quantity * (worker_percent_work_party / 100)
-                        if work_price_part > employee_hours_tariff:
+                        if work_price_part > standard_hours_tariff:
                             aggregate_hours += time_value * quantity * (worker_percent_work_party / 100)
                     else:
-                        if work_price_part <= employee_hours_tariff:
+                        if work_price_part <= standard_hours_tariff:
                             standard_hours += time_value * quantity / workers_count
-                        if work_price_part > employee_hours_tariff:
+                        if work_price_part > standard_hours_tariff:
                             aggregate_hours += time_value * quantity / workers_count
+
+                    # Workers with unique tariff
+                    if worker_employee_id == 27:
+                        standard_hours += aggregate_hours
+                        aggregate_hours = 0
+                        standard_hours_tariff = 520
+                        overworking_hours_tariff = 520
+                        overwoking_threshold = 10**5
+                        if ((employee_work_time + standard_hours) - (55_000 / 520)) > 0:
+                            overwoking_threshold = 0
 
                 elif self.city == 'VLZ':
+                    # Common tariff
                     if worker_percent_work_party > 0:
-                        if (work_price_part <= employee_hours_tariff) or (work_price_part > employee_hours_tariff):
+                        if (work_price_part <= standard_hours_tariff) or (work_price_part > standard_hours_tariff):
                             standard_hours += time_value * quantity * (worker_percent_work_party / 100)
                     else:
-                        if (work_price_part <= employee_hours_tariff) or (work_price_part > employee_hours_tariff):
+                        if (work_price_part <= standard_hours_tariff) or (work_price_part > standard_hours_tariff):
                             aggregate_hours += time_value * quantity / workers_count
 
-                employee_work_time += (standard_hours+aggregate_hours)
-                if 0 < employee_work_time < 150:
-                    standard_hours_profit = standard_hours * work_price_part
+                    if worker_employee_id == 8:
+                        standard_hours += aggregate_hours
+                        aggregate_hours = 0
+                        standard_hours_tariff = 720
+                        overworking_hours_tariff = 720
+                        overwoking_threshold = 10_000
+                        if ((employee_work_time + standard_hours) - (55_000 / 520)) > 0:
+                            overwoking_threshold = 0
 
+
+                employee_work_time += (standard_hours+aggregate_hours)
+                if 0 < employee_work_time < overwoking_threshold:
+                    standard_hours_profit = standard_hours * work_price_part 
                     if standard_hours_profit > 0:
                         metrics_details['standard_hours'].append({
-                            'description': name,
+                            'description': f'({document_fullnumber}) {name}',
                             'amount': standard_hours_profit,
                         })
 
                     aggregate_hours_profit = aggregate_hours * work_price_part
                     if aggregate_hours_profit > 0:
                         metrics_details['aggregate_hours'].append({
-                            'description': name,
+                            'description': f'({document_fullnumber}) {name}',
                             'amount': aggregate_hours_profit,
                         })
 
-                elif employee_work_time >= 150:
-                    reworked_hours_profit = (standard_hours+aggregate_hours)*hours_tariff[self.city]['rework']
-                    metrics_details['reworked_hours'].append({
-                        'description': name,
-                        'amount': reworked_hours_profit,
+                elif employee_work_time >= overwoking_threshold:
+                    overworking_hours_profit = (
+                        (standard_hours+aggregate_hours) * overworking_hours_tariff
+                    )
+                    metrics_details['overworking_hours'].append({
+                        'description': f'({document_fullnumber}) {name}',
+                        'amount': overworking_hours_profit,
                     })
+
+
+                work_data = {
+                    'WORKER_EMPLOYEE_ID': worker_employee_id,
+                    'NAME': name,
+                    'TIME_VALUE': time_value,
+                    'QUANTITY': quantity,
+                    'PRICE_NORM': price_norm,
+                    'PRICE': price,
+                    'WORK_PRICE_PART': work_price_part,
+                    'WORKERS_COUNT': workers_count,
+                }
+                if standard_hours > 0:
+                    works_data['standard']['hours'] += standard_hours
+                    works_data['standard']['list'].append(work_data)
+
+                elif aggregate_hours > 0:
+                    works_data['aggregate']['hours'] += aggregate_hours
+                    works_data['aggregate']['list'].append(work_data)
 
             employee_data = self.__makeEmployeeDataDict(employee['fullname'], metrics_details)
             if employee_data:
                 block_data['employees'].append(employee_data)
+
+        if detailed:
+            block_data['details'] = {
+                'works_data': works_data
+            }
 
         return block_data
 
@@ -707,8 +861,9 @@ class Salaries():
             'employees': [],
             'metrics_data': [
                 {'id': 'employee', 'title': 'Сотрудник'},
-                {'id': 'normal_hours', 'title': 'Нормо-часы'},
-                {'id': 'works', 'title': 'Собственные работы'},
+                {'id': 'standard_hours', 'title': 'Стандартные часы'},
+                {'id': 'aggregate_hours', 'title': 'Агрегатные часы'},
+                {'id': 'own_works', 'title': 'Собственные работы'},
                 {'id': 'additional_salary', 'title': 'Доп. мотивация'},
                 {'id': 'additional_metrics_amount', 'title': 'Бонусы/вычеты'},
                 {'id': 'amount', 'title': 'Сумма'},
@@ -716,8 +871,9 @@ class Salaries():
         }
 
         metrics_details = {
-            'normal_hours': [],
-            'works': [],
+            'standard_hours': [],
+            'aggregate_hours': [],
+            'own_works': [],
             'additional_salary': [],
         }
 
@@ -733,57 +889,55 @@ class Salaries():
         )
         response = plans_api.getPlanMetrics(plan_request)
         metrics = json.loads(response.content)['metrics']
+        spare_parts = metrics[2]
+        normal_hours = metrics[3]
 
 
-        # Get external works hours
-        external_works_hours_query = f'''
-            SELECT DISTINCT SUM((sw.PRICE / sw.PRICE_NORM) * sw.QUANTITY)
-            FROM SERVICE_WORK sw
-            JOIN BRIGADE_STRUCTURE bs
-                ON sw.SERVICE_WORK_ID = bs.SERVICE_WORK_ID
-            JOIN DOCUMENT_OUT do
-                ON sw.DOCUMENT_OUT_ID = do.DOCUMENT_OUT_ID
-            JOIN DOCUMENT_OUT_HEADER doh
-                ON do.DOCUMENT_OUT_ID = doh.DOCUMENT_OUT_ID
-            WHERE doh.DATE_CREATE BETWEEN timestamp '%(start_date)s 00:00' AND timestamp '%(end_date)s 23:59'
-                AND doh.DOCUMENT_TYPE_ID = 11
-                AND doh.STATE = 4
-                AND bs.EMPLOYEE_ID IS NULL;
-        '''
-        external_works_hours = self.__fetch(
-            external_works_hours_query, 
-            fetch_type='one',
-            indexes=[0],
-            zero_if_none=True,
-        )
+        # Get works hours
+        works_data = self.getBlockData(block_id='mechanics', detailed=True)['details']['works_data']
+        standard_hours = works_data['standard']['hours']
+        standard_works = works_data['standard']['list']
+        aggregate_hours = works_data['aggregate']['hours']
+        aggregate_works = works_data['aggregate']['list']
 
+        standard_hours_tariff = self.__config[self.city]['mechanics']['normal_hours_tariff']['standard']
 
         if self.city == 'VLG':
             minimum_salary = 65_000
 
-            # Normal hours salary
-            spare_parts = metrics[2]
-            normal_hours = metrics[3]
-
-            current_normal_hours = int(normal_hours['current_value']) - int(external_works_hours)
-
-            if current_normal_hours < 900:
-                normal_hours_tariff = 35
-            elif 900 < current_normal_hours < 1150:
-                normal_hours_tariff = 45
-            elif 1150 < current_normal_hours < 1350:
-                normal_hours_tariff = 50
-            elif current_normal_hours > 1350:
-                normal_hours_tariff = 55
+            # Standard hours salary
+            if standard_hours < 900:
+                standard_hours_tariff = 35
+            elif 900 < standard_hours < 1150:
+                standard_hours_tariff = 45
+            elif 1150 < standard_hours < 1350:
+                standard_hours_tariff = 50
+            elif standard_hours > 1350:
+                standard_hours_tariff = 55
 
             spare_parts_tariff = 10
 
-            normal_hours_salary = (normal_hours_tariff + spare_parts_tariff) * current_normal_hours
-            if normal_hours_salary < minimum_salary:
-                normal_hours_salary = minimum_salary
-            metrics_details['normal_hours'].append({
-                'description': f'{current_normal_hours} ч.',
-                'amount': normal_hours_salary,
+            standard_hours_salary = (standard_hours_tariff + spare_parts_tariff) * standard_hours
+            if standard_hours_salary < minimum_salary:
+                standard_hours_salary = minimum_salary
+            metrics_details['standard_hours'].append({
+                'description': f'{int(standard_hours)} ч.',
+                'amount': standard_hours_salary,
+            })
+
+            # Aggregate hours salary
+            aggregate_hours_salary = 0
+
+            for work in aggregate_works:
+                aggregate_hours_salary += (
+                    (work['TIME_VALUE'] * work['QUANTITY'] / work['WORKERS_COUNT'] * work['PRICE_NORM']) 
+                    * self.service_fee 
+                    * 0.15
+                )
+
+            metrics_details['aggregate_hours'].append({
+                'description': f'{int(aggregate_hours)} ч.',
+                'amount': aggregate_hours_salary,
             })
 
             # Additional salary
@@ -803,70 +957,45 @@ class Salaries():
                     'amount': spare_parts_plan_overfulfill_bonus,
                 })
 
-
         elif self.city == 'VLZ':
             minimum_salary = 50_000
-            metrics_details['normal_hours'].append({
+            metrics_details['standard_hours'].append({
                 'description': f'Несгораемая сумма',
                 'amount': minimum_salary,
             })
 
-            # Normal hours salary
-            normal_hours = metrics[3]
-
-            current_normal_hours = int(normal_hours['current_value'])
-            normal_hours_tariff = 40
-
-            normal_hours_salary = normal_hours_tariff * current_normal_hours
-            metrics_details['normal_hours'].append({
-                'description': f'{current_normal_hours} ч.',
-                'amount': normal_hours_salary,
+            # Standard hours salary
+            standard_hours += aggregate_hours
+            if standard_hours >= 800:
+                standard_hours_tariff = 40
+                standard_hours_salary = standard_hours_tariff * standard_hours
+            else:
+                standard_hours_salary = 0
+            metrics_details['standard_hours'].append({
+                'description': f'{int(standard_hours)} ч.',
+                'amount': standard_hours_salary,
             })
 
-            # Mechanic salary
-            works_query = f'''
-                SELECT
-                    sw.NAME,
-                    sw.PRICE, 
-                    sw.TIME_VALUE, 
-                    sw.QUANTITY,  
-                    sw.PRICE_NORM,
-                    bs.PERCENT_EXEC_WORK,
-                    bs.TARIFF
-                FROM SERVICE_WORK sw
-                JOIN BRIGADE_STRUCTURE bs
-                    ON sw.SERVICE_WORK_ID = bs.SERVICE_WORK_ID
-                JOIN DOCUMENT_OUT do
-                    ON sw.DOCUMENT_OUT_ID = do.DOCUMENT_OUT_ID
-                JOIN DOCUMENT_OUT_HEADER doh
-                    ON do.DOCUMENT_OUT_ID = doh.DOCUMENT_OUT_ID
-                WHERE doh.DATE_CREATE BETWEEN timestamp '%(start_date)s 00:00' AND timestamp '%(end_date)s 23:59'
-                    AND doh.DOCUMENT_TYPE_ID = 11
-                    AND doh.STATE = 4
-                    AND bs.EMPLOYEE_ID = {employee['id']};
-            '''
-            works = self.__fetch(
-                works_query, 
-                fetch_type='all'
-            )
+        # Own works
+        for work in (standard_works + aggregate_works):
+            if work['WORKER_EMPLOYEE_ID'] != employee['id']:
+                continue
+            
+            name = work['NAME']
+            time_value = work['TIME_VALUE']
+            quantity = work['QUANTITY']
+            price_norm = work['PRICE_NORM']
+            price = work['PRICE']
+            work_price_part = work['WORK_PRICE_PART']
 
-            for work in works:
-                name = work[0]
-                price = work[1]
-                time_value = work[2]
-                quantity = work[3]
-                price_norm = work[4]
-                worker_percent_exec_work = work[5]
-                worker_tariff = work[6]
-
-                if time_value:
-                    work_profit = (float(time_value) * quantity) * worker_tariff
-                else:
-                    work_profit = (float(price) / float(price_norm) * quantity) * worker_tariff
-                metrics_details['works'].append({
-                    'description': name,
-                    'amount': work_profit,
-                })
+            if time_value:
+                work_profit = (time_value * quantity) * work_price_part
+            else:
+                work_profit = (price / price_norm * quantity) * work_price_part
+            metrics_details['own_works'].append({
+                'description': name,
+                'amount': work_profit,
+            })
 
 
         employee_data = self.__makeEmployeeDataDict(employee['fullname'], metrics_details)
