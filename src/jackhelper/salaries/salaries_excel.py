@@ -79,11 +79,26 @@ def makeSalariesExcelFile(salaries_data: dict) -> str:
                     cell = ws.cell(row=row_num, column=col_num, value=round(metrics.get(metric_id, ""), 2))
                     cell.fill = data_fill  # Light-gray background
                     cell.border = thin_border
+
             row_num += 1
 
-        # 4. Empty row between blocks
+        # 4. Values amount
+        total_amount = block['salaries_amount']
+        total_amount_cell = ws.cell(row=row_num, column=1, value="Итого:")
+        total_amount_cell.font = header_font
+        total_amount_cell.fill = metrics_fill
+        total_amount_cell.border = thin_border
+
+        # Записываем сумму в последнюю ячейку строки
+        total_value_cell = ws.cell(row=row_num, column=2, value=round(total_amount, 2))
+        total_value_cell.font = header_font
+        total_value_cell.fill = metrics_fill
+        total_value_cell.border = thin_border
+
         row_num += 1
-        
+
+        # 5. Empty row between blocks
+        row_num += 1
 
     # Columns width configuration
     for col in ws.columns:
